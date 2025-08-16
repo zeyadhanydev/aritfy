@@ -9,13 +9,13 @@ import { ToolSidebarHeader } from '@/features/editor/components/tool-sidebar-hea
 import { ToolSidebarClose } from './tool-sidebar-close';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ShapeTool } from './shape-tool';
-interface ShapeSidebar {
+interface ShapeSidebarProps {
     activeTool: ActiveTool;
     onChangeActiveTool: (tool: ActiveTool) => void;
     editor: Editor | undefined;
 }
 
-export const ShapeSidebar = ({activeTool,  editor,onChangeActiveTool}: ShapeSidebar) => {
+export const ShapeSidebar = ({activeTool,  editor,onChangeActiveTool}: ShapeSidebarProps) => {
   const onClose = () => {
     onChangeActiveTool('select');
   }
