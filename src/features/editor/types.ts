@@ -1,14 +1,62 @@
 import type { fabric } from "fabric";
+import type { ITextboxOptions } from "fabric/fabric-impl";
 import * as material from "material-colors";
 
+export const filters = [
+  "none",
+  "polaroid",
+  "sepia",
+  "kodachrome",
+  "contrast",
+  "brightness",
+  "brownie",
+  "technicolor",
+  "pixelate",
+  "invert",
+  "blur",
+  'grayscale',
+  "sharpen",
+  "emboss",
+  "removecolor",
+  "blackwhite",
+  "vibrance",
+  "blendcolor",
+  "huerotate",
+  "resize",
+  "gamma",
+  'saturation'
+]
+
+
+export const fonts = [
+  'Arial',
+  'Arial Black',
+  'Verdana',
+  'Helvetica',
+  'Tahoma',
+  'Trebuchet MS',
+  'Times New Roman',
+  'Georgia',
+  'Garamond',
+  'Courier New',
+  'Brush Script MT',
+  'Palatino',
+  'Bookman',
+  'Comic Sans MS',
+  'Impact',
+  'Lucida Sans Unicode',
+  'Geneva',
+  "Lucida Console"
+]
+
 export const selectionDependentTools = [
-  'fill',
-  'font',
-  'filter',
-  'opacity',
-  'stroke-color',
-  'remove-bg',
-  'stroke-width',
+	"fill",
+	"font",
+	"filter",
+	"opacity",
+	"stroke-color",
+	"remove-bg",
+	"stroke-width",
 ];
 
 export const colors = [
@@ -53,7 +101,9 @@ export const FILL_COLOR = "rgba(0,0,0,1)";
 export const STROKE_COLOR = "rgba(0,0,0,1)";
 export const STROKE_WIDTH = 2;
 export const STROKE_DASH_ARRAY = [];
-
+export const FONT_WEIGHT = 400;
+export const FONT_FAMILY = "Arial";
+export const FONT_SIZE = 32;
 export const CIRCLE_OPTIONS = {
 	radius: 150,
 	left: 100,
@@ -81,6 +131,14 @@ export const TRIANGLE_OPTIONS = {
 	angle: 0,
 	strokeWidth: STROKE_WIDTH,
 };
+export const TEXT_OPTIONS = {
+	type: "textbox",
+	left: 100,
+	top: 100,
+	fill: FILL_COLOR,
+	fontSize: FONT_SIZE,
+	fontFamily: FONT_FAMILY,
+};
 export const DIAMOND_OPTIONS = {
 	left: 100,
 	top: 100,
@@ -96,13 +154,16 @@ export type buildEditorProps = {
 	fillColor: string;
 	strokeColor: string;
 	strokeWidth: number;
+  fontFamily: string;
 	setFillColor: (value: string) => void;
 	setStrokeColor: (value: string) => void;
 	setStrokeWidth: (value: number) => void;
 	selectedObjects: fabric.Object[];
-  strokeDashArray: number[];
-  setStrokeDashArray: (value: number[]) => void;
+	strokeDashArray: number[];
+	setStrokeDashArray: (value: number[]) => void;
+  setFontFamily: (value: string) => void;
 };
+
 
 export interface Editor {
 	addCircle: () => void;
@@ -119,13 +180,35 @@ export interface Editor {
 	strokeWidth: number;
 	canvas: fabric.Canvas;
 
+	changeOpacity: (value: number) => void;
 	selectedObjects: fabric.Object[];
 	getActiveFillColor: () => string;
 	getActiveStrokeColor: () => string;
 	getActiveStrokeWidth: () => number;
-  getActiveStrokeDashArray: () => number[];
+	getActiveStrokeDashArray: () => number[];
+	getActiveOpacity: () => number;
+	bringForward: () => void;
+	sendBackwards: () => void;
+	addText: (value: string, options?: ITextboxOptions) => void;
+  changeFontFamily: (value: string) => void
+  getActiveFontFamily: () => string;
+  getActiveFontWeight: () => number;
+  changeFontWeight: (value: number) => void
+  changeFontStyle: (value: string) => void
+  getActiveFontStyle: () => string;
+  changeFontLinethrough: (value: boolean) => void
+  getActiveFontLinethrough: () => boolean;
+  changeFontUnderline: (value: boolean) => void
+  getActiveFontUnderline: () => boolean;
+  changeTextAlign: (value: ITextboxOptions['textAlign']) => void
+  getActiveTextAlign: () => string;
+  changeFontSize: (value: number) => void
+  getActiveFontSize: () => number;
+  delete: () => void;
+  addImage: (value: string) => void;
+  changeImageFilter: (value: string) => void;
 }
 
-export interface EditorHookProps  {
-  clearSelectionCallback?: () => void;
+export interface EditorHookProps {
+	clearSelectionCallback?: () => void;
 }

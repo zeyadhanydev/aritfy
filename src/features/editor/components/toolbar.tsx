@@ -1,78 +1,52 @@
 "use client";
 
-import React from "react";
-import { BsBorderWidth } from "react-icons/bs";
-import { Hint } from "@/components/hint";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { type ActiveTool, type Editor, FILL_COLOR } from "../types";
+import dynamic from "next/dynamic";
+import type { ActiveTool, Editor } from "../types";
 
+// Define props interface for the component
 interface ToolbarProps {
 	editor: Editor | undefined;
 	activeTool: ActiveTool;
-	onChangeActiveTool: (tool: ActiveTool) => void;
+	onChangeActiveTool: (tool: string) => void;
 }
 
-export const Toolbar = ({
-	activeTool,
-	editor,
-	onChangeActiveTool,
-}: ToolbarProps) => {
-	const fillColor = editor?.getActiveFillColor();
-	const strokeColor = editor?.getActiveStrokeColor();
-	if (editor?.selectedObjects.length === 0) {
-		return (
-			<div className="shrink-0 h-[56px] border-b bg-white w-full flex items-center overflow-x-auto z-[49] p-2 gap-x-2" />
-		);
-	}
-	return (
-		<div className="shrink-0 h-[56px] border-b bg-white w-full flex items-center overflow-x-auto z-[49] p-2 gap-x-2">
-			<div className="flex items-center h-full justify-center">
-				<Hint label="color" side="bottom" sideOffset={5}>
-					<Button
-						onClick={() => onChangeActiveTool("fill")}
-						variant={"ghost"}
-						size={"icon"}
-						className={cn(activeTool === "fill" && "bg-gray-100")}
-					>
-						<div
-							className="rounded-sm size-4 border"
-							style={{
-								backgroundColor: fillColor || FILL_COLOR,
-							}}
-						/>
-					</Button>
-				</Hint>
-			</div>
-			<div className="flex items-center h-full justify-center">
-				<Hint label="Stroke Color" side="bottom" sideOffset={5}>
-					<Button
-						onClick={() => onChangeActiveTool("stroke-color")}
-						variant={"ghost"}
-						size={"icon"}
-						className={cn(activeTool === "stroke-color" && "bg-gray-100")}
-					>
-						<div
-							className="rounded size-4 border-2 bg-white"
-							style={{
-								borderColor: strokeColor,
-							}}
-						/>
-					</Button>
-				</Hint>
-			</div>
-			<div className="flex items-center h-full justify-center">
-				<Hint label="Stroke Width" side="bottom" sideOffset={5}>
-					<Button
-						onClick={() => onChangeActiveTool("stroke-width")}
-						variant={"ghost"}
-						size={"icon"}
-						className={cn(activeTool === "stroke-width" && "bg-gray-100")}
-					>
-						<BsBorderWidth className="size-4" />
-					</Button>
-				</Hint>
+// Import the toolbar component with client-side only rendering
+// This prevents hydration mismatch errors since the component
+// relies entirely on client-side editor state
+const ClientToolbar = dynamic(
+	() => import("./client-toolbar").then((mod) => mod.ClientToolbar),
+	{ ssr: false },
+);
+
+// Simple skeleton loader to show during client-side loading
+const ToolbarSkeleton = () => (
+	<div className="shrink-0 h-[56px] border-b bg-white w-full flex items-center overflow-x-auto z-[49] p-2 gap-x-2">
+		<div className="w-full h-full flex items-center justify-start">
+			<div className="animate-pulse flex space-x-2">
+				{Array(5)
+					.fill(0)
+					.map((_, i) => (
+						<div key={i} className="rounded-full bg-gray-200 h-8 w-8" />
+					))}
 			</div>
 		</div>
+	</div>
+);
+
+/**
+ * Toolbar component that renders a client-only implementation
+ * This approach prevents hydration mismatches by deferring
+ * all rendering to the client side
+ */
+export const Toolbar = (props: ToolbarProps) => {
+	return (
+		<>
+			<ClientToolbar {...props} />
+			<noscript>
+				<ToolbarSkeleton />
+			</noscript>
+		</>
 	);
 };
+
+export default Toolbar;

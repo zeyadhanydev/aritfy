@@ -3,18 +3,23 @@
 import { fabric } from "fabric";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { FillColorSidebar } from "@/features/editor/components/fill-color-sidebar";
+import { FilterSidebar } from "@/features/editor/components/filter-sidebar";
+import { FontSidebar } from "@/features/editor/components/font-sidebar";
 import { Footer } from "@/features/editor/components/footer";
+import { ImageSidebar } from "@/features/editor/components/image-sidebar";
 import { Navbar } from "@/features/editor/components/navbar";
+import { OpacitySidebar } from "@/features/editor/components/opacity-sidebar";
 import { ShapeSidebar } from "@/features/editor/components/shape-sidebar";
 import { Sidebar } from "@/features/editor/components/sidebar";
 import { StrokeColorSidebar } from "@/features/editor/components/stroke-color-sidebar";
+import { StrokeWidthSidebar } from "@/features/editor/components/stroke-width-sidebar";
+import { TextSidebar } from "@/features/editor/components/text-sidebar";
 import { Toolbar } from "@/features/editor/components/toolbar";
 import { useEditor } from "@/features/editor/hooks/use-editor";
 import {
 	type ActiveTool,
 	selectionDependentTools,
 } from "@/features/editor/types";
-import { StrokeWidthSidebar } from "./stroke-width-sidebar";
 
 export const Editor = () => {
 	const [activeTool, setActiveTool] = useState<ActiveTool>("select");
@@ -77,15 +82,41 @@ export const Editor = () => {
 					onChangeActiveTool={onChangeActiveTool}
 				/>
 				<StrokeColorSidebar
-				editor={editor}
-				activeTool={activeTool}
-				onChangeActiveTool={onChangeActiveTool}
+					editor={editor}
+					activeTool={activeTool}
+					onChangeActiveTool={onChangeActiveTool}
 				/>
 				<StrokeWidthSidebar
 					editor={editor}
 					activeTool={activeTool}
 					onChangeActiveTool={onChangeActiveTool}
-					/>
+				/>
+				<OpacitySidebar
+					editor={editor}
+					activeTool={activeTool}
+					onChangeActiveTool={onChangeActiveTool}
+				/>
+				<TextSidebar
+					editor={editor}
+					activeTool={activeTool}
+					onChangeActiveTool={onChangeActiveTool}
+				/>
+				<FontSidebar
+					editor={editor}
+					activeTool={activeTool}
+					onChangeActiveTool={onChangeActiveTool}
+				/>
+
+				<ImageSidebar
+					editor={editor}
+					activeTool={activeTool}
+					onChangeActiveTool={onChangeActiveTool}
+				/>
+				<FilterSidebar
+					editor={editor}
+					activeTool={activeTool}
+					onChangeActiveTool={onChangeActiveTool}
+				/>
 				<main className="bg-muted flex-1 overflow-auto relative flex flex-col">
 					<Toolbar
 						editor={editor}
