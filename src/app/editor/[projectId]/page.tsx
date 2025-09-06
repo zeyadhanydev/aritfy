@@ -13,9 +13,9 @@ interface EditorProjectIdPageProps {
 }
 const EditorProjectIdPage = ({params}: EditorProjectIdPageProps) => {
   const { projectId } = use(params);
-  const { data, isLoading, isError } = useGetProject(projectId);
+  const { data, isLoading, isError, isPending } = useGetProject(projectId);
 
- if (isLoading || !data) {
+ if (isLoading || isPending || !data) {
    return <div className='h-full flex flex-col items-center justify-center'>
      <Loader className='size-6 animate-spin text-muted-foreground'/>
    </div>
@@ -28,7 +28,7 @@ const EditorProjectIdPage = ({params}: EditorProjectIdPageProps) => {
    </div>
  }
   return (
-    <Editor initalData={data}/>
+    <Editor initialData={data}/>
   )
 }
 

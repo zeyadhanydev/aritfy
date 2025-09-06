@@ -19,6 +19,7 @@ export const useAutoResize = ({ canvas, container }: UseAutoResizeProps) => {
 			.getObjects()
 			.find((object) => object.name === "clip");
 
+		if (!localWorkspace) return;
 		// @ts-expect-error findScaleToFit doesn't has a types in fabric library
 		const scale = fabric.util.findScaleToFit(localWorkspace, {
 			width,
@@ -27,8 +28,6 @@ export const useAutoResize = ({ canvas, container }: UseAutoResizeProps) => {
 		const zoom = zoomRatio * scale;
 		canvas.setViewportTransform(fabric.iMatrix.concat());
 		canvas.zoomToPoint(new fabric.Point(center.left, center.top), zoom);
-
-		if (!localWorkspace) return;
 		const workspaceCenter = localWorkspace.getCenterPoint();
 		const viewportTransform = canvas.viewportTransform;
 		if (
@@ -63,5 +62,5 @@ export const useAutoResize = ({ canvas, container }: UseAutoResizeProps) => {
 			}
 		};
 	}, [canvas, container, autoZoom]);
-	return {autoZoom};
+	return { autoZoom };
 };

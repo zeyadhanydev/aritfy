@@ -7,7 +7,7 @@ export type ResponseType = InferResponseType<
 >;
 
 export const useGetProject = (id: string) => {
-	const query = useQuery({
+	const query = useQuery<ResponseType["data"]>({
 		// if exits turn it to bool
 		enabled: !!id,
 		queryKey: ["projects", { id }],

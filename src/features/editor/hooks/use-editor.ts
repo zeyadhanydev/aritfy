@@ -1,6 +1,6 @@
 import { fabric } from "fabric";
 import type { ITextboxOptions } from "fabric/fabric-impl";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { get } from "unsplash-js/dist/methods/users";
 import { useAutoResize } from "@/features/editor/hooks/use-auto-resize";
 import { useCanvasEvents } from "@/features/editor/hooks/use-canvas-events";
@@ -32,6 +32,8 @@ import { useClipboard } from "./use-clipboard";
 import { useHistory } from "./use-history";
 import { useHotkeys } from "./use-hotkeys";
 import { useWindowEvents } from "./use-window-events";
+import { useRemoveBgImage } from "@/features/ai/api/use-remove-bg";
+import { useLoadState } from "./use-load-state";
 
 const buildEditor = ({
 	canvas,
@@ -542,7 +544,17 @@ const buildEditor = ({
 		selectedObjects,
 	};
 };
-export const useEditor = ({ clearSelectionCallback }: EditorHookProps) => {
+export const useEditor = ({
+	clearSelectionCallback,
+	saveCallback,
+	defaultHeight,
+	defaultWidth,
+	defaultState,
+}: EditorHookProps) => {
+	const initialState = useRef(defaultState);
+	const initialWidth = useRef(defaultWidth);
+	const initialHeight = useRef(defaultHeight);
+
 	const [canvas, setCanvas] = useState<null | fabric.Canvas>(null);
 	const [container, setContainer] = useState<HTMLDivElement | null>(null);
 	const [selectedObjects, setSelectedObjects] = useState<fabric.Object[]>([]);
@@ -555,7 +567,8 @@ export const useEditor = ({ clearSelectionCallback }: EditorHookProps) => {
 	const [fontFamily, setFontFamily] = useState<string>(FONT_FAMILY);
 	const { copy, paste } = useClipboard({ canvas });
 	const { save, canRedo, canUndo, redo, undo, setHistoryIndex, canvasHistory } =
-		useHistory({ canvas });
+		useHistory({ canvas, saveCallback });
+
 	const { autoZoom } = useAutoResize({
 		canvas,
 		container,
@@ -566,6 +579,14 @@ export const useEditor = ({ clearSelectionCallback }: EditorHookProps) => {
 		canvas,
 		setSelectedObjects,
 		clearSelectionCallback,
+	});
+
+	useLoadState({
+		autoZoom,
+		canvas,
+		canvasHistory,
+		initialState,
+		setHistoryIndex,
 	});
 
 	const editor = useMemo(() => {
@@ -640,8 +661,8 @@ export const useEditor = ({ clearSelectionCallback }: EditorHookProps) => {
 				cornerStrokeColor: "#3b82f6",
 			});
 			const initialWorkspace = new fabric.Rect({
-				width: 600,
-				height: 900,
+				width: initialWidth.current,
+				height: initialHeight.current,
 				name: "clip",
 				fill: "white",
 				selectable: false,
@@ -665,6 +686,7 @@ export const useEditor = ({ clearSelectionCallback }: EditorHookProps) => {
 			setCanvas(initialCanvas);
 			setContainer(initialContainer);
 			const currentState = JSON.stringify(initialCanvas.toJSON(JSON_KEYS));
+
 			canvasHistory.current.push(currentState);
 			setHistoryIndex(0);
 		},

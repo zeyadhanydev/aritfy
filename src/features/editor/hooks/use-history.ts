@@ -1,12 +1,17 @@
 import { use, useCallback, useRef, useState } from "react";
-import { TbHistoryToggle } from "react-icons/tb";
+
 import { JSON_KEYS } from "../types";
 
 type UseHistoryProps = {
 	canvas: fabric.Canvas | null;
+	saveCallback: (values: {
+		json: string;
+		width: number;
+		height: number;
+	}) => void;
 };
 
-export const useHistory = ({ canvas }: UseHistoryProps) => {
+export const useHistory = ({ canvas, saveCallback }: UseHistoryProps) => {
 	const [historyIndex, setHistoryIndex] = useState(0);
 
 	const canvasHistory = useRef<string[]>([]);
@@ -41,10 +46,16 @@ export const useHistory = ({ canvas }: UseHistoryProps) => {
 				canvasHistory.current.push(json);
 				setHistoryIndex(canvasHistory.current.length - 1);
 			}
-
+			const workspace = canvas.clipPath;
+			console.log("workspace", workspace);
 			// TODO: Save Callback
+			saveCallback?.({
+				height: workspace?.height,
+				width: workspace?.width,
+				json: json,
+			});
 		},
-		[canvas],
+		[canvas, saveCallback],
 	);
 	const undo = useCallback(() => {
 		if (canUndo()) {
