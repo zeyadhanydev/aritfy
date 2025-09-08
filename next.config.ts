@@ -10,6 +10,14 @@ const nextConfig: NextConfig = {
 	},
 	images: {
 		remotePatterns: [
+			{
+				protocol: "https",
+				hostname: "r08rhshmgy.ufs.sh",
+			},
+			{
+				protocol: "https",
+				hostname: "newapi.kuaitu.cc",
+			},
 			// unsplash images
 			{
 				protocol: "https",

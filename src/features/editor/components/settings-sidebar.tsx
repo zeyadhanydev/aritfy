@@ -14,6 +14,7 @@ import {
 } from "@/features/editor/types";
 import { cn } from "@/lib/utils";
 import { ToolSidebarClose } from "./tool-sidebar-close";
+import { Loader } from "lucide-react";
 
 interface SettingsSidebarProps {
 	activeTool: ActiveTool;
@@ -30,11 +31,12 @@ export const SettingsSidebar = ({
 		onChangeActiveTool("select");
 	};
 	const workspace = editor?.getWorkspace();
+
 	const initialWidth = useMemo(() => {
-		return `${workspace?.width || 0}`;
+		return `${workspace?.width}`;
 	}, [workspace]);
 	const initialHeight = useMemo(() => {
-		return `${workspace?.height || 0}`;
+		return `${workspace?.height}`;
 	}, [workspace]);
 	const initialBackground = useMemo(() => {
 		return `${workspace?.fill || "#FFFFFF"}`;
@@ -44,9 +46,11 @@ export const SettingsSidebar = ({
 	const [backgournd, setBackground] = useState(initialBackground);
 
 	useEffect(() => {
-		setWidth(initialWidth);
-		setHeight(initialHeight);
-		setBackground(initialBackground);
+		if (workspace) {
+			setWidth(initialWidth);
+			setHeight(initialHeight);
+			setBackground(initialBackground);
+		}
 	}, [initialWidth, initialHeight, initialBackground]);
 	const changeWidth = (value: string) => setWidth(value);
 	const changeHeight = (value: string) => setHeight(value);
@@ -69,7 +73,10 @@ export const SettingsSidebar = ({
 				activeTool === "settings" ? "visible" : "hidden",
 			)}
 		>
-			<ToolSidebarHeader title="Settings" description="Change the look of your workspace" />
+			<ToolSidebarHeader
+				title="Settings"
+				description="Change the look of your workspace"
+			/>
 
 			<ScrollArea>
 				<form className="p-4 space-y-4" onSubmit={onSubmit}>
@@ -97,8 +104,10 @@ export const SettingsSidebar = ({
 					</Button>
 				</form>
 				<div className="p-4">
-				<ColorPicker value={backgournd as string} onChange={changeBackground}></ColorPicker>
-
+					<ColorPicker
+						value={backgournd as string}
+						onChange={changeBackground}
+					></ColorPicker>
 				</div>
 			</ScrollArea>
 

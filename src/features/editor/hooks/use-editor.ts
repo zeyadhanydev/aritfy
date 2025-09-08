@@ -110,7 +110,7 @@ const buildEditor = ({
 	};
 	const loadJson = (json: string) => {
 		const data = JSON.parse(json);
-		canvas.loadFromJSON(data, () => {
+		canvas.loadFromJSON(data, (data) => {
 			autoZoom();
 		});
 	};

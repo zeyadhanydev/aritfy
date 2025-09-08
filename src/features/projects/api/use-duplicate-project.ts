@@ -1,42 +1,42 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-
 import type { InferRequestType, InferResponseType } from "hono";
 import { toast } from "sonner";
 import { client } from "@/lib/hono";
 
 type ResponseType = InferResponseType<
-	(typeof client.api.projects)[":id"]["$patch"],
+	(typeof client.api.projects)[":id"]["duplicate"]["$post"],
 	200
 >;
 type RequestType = InferRequestType<
-	(typeof client.api.projects)[":id"]["$patch"]
->["json"];
+	(typeof client.api.projects)[":id"]["duplicate"]["$post"]
+>["param"];
 
-export const useUpdateProject = (id: string) => {
+export const useDuplicateProject = () => {
 	const queryClient = useQueryClient();
 	const mutation = useMutation<ResponseType, Error, RequestType>({
-		mutationKey: ["project", { id }],
-		mutationFn: async (json) => {
-			const response = await client.api.projects[":id"].$patch({
-				json,
-				param: { id },
+		mutationFn: async (param) => {
+			const response = await client.api.projects[':id']['duplicate'].$post({
+				param
 			});
+
 			if (!response.ok) {
-				throw new Error("Failed to update project");
+				throw new Error("Failed to duplicate project");
 			}
-			return response.json();
+
+
+				return await response.json();
+
 		},
 		onSuccess: () => {
-			queryClient.invalidateQueries({
-				queryKey: ["project", { id }],
-			});
+			toast.success("Project duplicated");
 			queryClient.invalidateQueries({
 				queryKey: ["projects"],
 			});
 		},
 		onError: () => {
-			toast.error("Failed to update project");
+			toast.error("Failed to duplicate project");
 		},
 	});
+
 	return mutation;
 };

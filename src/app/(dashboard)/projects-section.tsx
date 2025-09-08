@@ -21,13 +21,32 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+import { useDuplicateProject } from "@/features/projects/api/use-duplicate-project";
+import { useDeleteProject } from "@/features/projects/api/use-delete-project";
+import { useConfirm } from "@/hooks/use-confirm";
 
 export const ProjectsSection = () => {
+	const [ConfirmDialog, confirm] = useConfirm(
+		"Are you sure?",
+		"You are about to delete this project",
+	);
+	const duplicateMutation = useDuplicateProject();
 	const router = useRouter();
+	const onCopy = (id: string) => {
+		console.log(id);
+		duplicateMutation.mutate({ id });
+	};
+	const removeMutation = useDeleteProject();
+	const onDelete = async (id: string) => {
+		const ok = await confirm();
+		if (ok) {
+			removeMutation.mutate({ id });
+		}
+	};
 
 	const { data, status, fetchNextPage, isFetchingNextPage, hasNextPage } =
 		useGetProjects();
-	console.log(data);
+
 	if (status === "error") {
 		return (
 			<div className="space-y-4">
@@ -53,7 +72,7 @@ export const ProjectsSection = () => {
 		);
 	}
 
-	if (!data.pages.length) {
+	if (!data.pages.length || !data.pages[0].data.length) {
 		return (
 			<div className="space-y-4">
 				<h3 className="font-semibold text-lg">Recent Projects</h3>
@@ -66,6 +85,7 @@ export const ProjectsSection = () => {
 	}
 	return (
 		<div className="space-y-4">
+			<ConfirmDialog />
 			<h3 className="font-semibold text-lg">Recent Projects</h3>
 
 			<Table>
@@ -100,16 +120,20 @@ export const ProjectsSection = () => {
 											<DropdownMenuContent align="end" className="w-60">
 												<DropdownMenuItem
 													className="h-10 cursor-pointer"
-													disabled={false}
-													onClick={() => {}}
+													disabled={duplicateMutation.isPending}
+													onClick={() => {
+														onCopy(project.id);
+													}}
 												>
 													<CopyIcon className="size-4 mr-2" />
 													Make a copy
 												</DropdownMenuItem>
 												<DropdownMenuItem
 													className="h-10 cursor-pointer"
-													disabled={false}
-													onClick={() => {}}
+													disabled={removeMutation.isPending}
+													onClick={() => {
+														onDelete(project.id);
+													}}
 												>
 													<Trash className="size-4 mr-2" />
 													Delete

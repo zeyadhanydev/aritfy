@@ -1,42 +1,44 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-
 import type { InferRequestType, InferResponseType } from "hono";
 import { toast } from "sonner";
 import { client } from "@/lib/hono";
 
 type ResponseType = InferResponseType<
-	(typeof client.api.projects)[":id"]["$patch"],
+	(typeof client.api.projects)[":id"]["$delete"],
 	200
 >;
 type RequestType = InferRequestType<
-	(typeof client.api.projects)[":id"]["$patch"]
->["json"];
+	(typeof client.api.projects)[":id"]["$delete"]
+>["param"];
 
-export const useUpdateProject = (id: string) => {
+export const useDeleteProject = () => {
 	const queryClient = useQueryClient();
 	const mutation = useMutation<ResponseType, Error, RequestType>({
-		mutationKey: ["project", { id }],
-		mutationFn: async (json) => {
-			const response = await client.api.projects[":id"].$patch({
-				json,
-				param: { id },
+		mutationFn: async (param) => {
+			const response = await client.api.projects[":id"].$delete({
+				param,
 			});
+
 			if (!response.ok) {
-				throw new Error("Failed to update project");
+				throw new Error("Failed to delete project");
 			}
-			return response.json();
+
+			return await response.json();
 		},
-		onSuccess: () => {
+		onSuccess: ({ data }) => {
+			toast.success("Project deleted");
+
 			queryClient.invalidateQueries({
-				queryKey: ["project", { id }],
+				queryKey: ["projects", { id: data.id }],
 			});
 			queryClient.invalidateQueries({
 				queryKey: ["projects"],
 			});
 		},
 		onError: () => {
-			toast.error("Failed to update project");
+			toast.error("Failed to delete project");
 		},
 	});
+
 	return mutation;
 };

@@ -2,12 +2,84 @@ import { db } from '@/db/drizzle';
 import { projects, projectsInsertSchema } from '@/db/schema';
 import { verifyAuth } from '@hono/auth-js';
 import { zValidator } from '@hono/zod-validator';
-import { and, desc, eq } from 'drizzle-orm';
+import { and, asc, desc, eq } from 'drizzle-orm';
 import {Hono} from 'hono'
 import z from 'zod';
+import { da } from 'zod/v4/locales';
 
 
 const app = new Hono()
+  .get('/templates', verifyAuth(), zValidator('query', z.object({
+    page: z.coerce.number(),
+    limit: z.coerce.number(),
+  })), async (c) => {
+    const {page, limit} =c.req.valid('query');
+    const data = await db.select().from(projects).where(
+      projects.isTemplate , true
+    ).limit(limit).offset((page -1 ) * limit).orderBy(
+      asc(projects.isPro),
+      desc(projects.updatedAt)
+    )
+    return c.json({data})
+  })
+  .delete('/:id', verifyAuth(), zValidator('param', z.object({id: z.string()})), async (c) => {
+    const auth = c.get('authUser');
+    const {id} = c.req.valid('param');
+    if (!auth.token.id) {
+       return c.json({error: 'Unauthorized'}, 401)
+    }
+    console.log(auth, id)
+    const data = await db.delete(projects).where(
+      and(
+        eq(projects.id, id),
+        eq(projects.userId, auth.token.id)
+      )
+    ).returning();
+    if (data.length === 0) {
+      return c.json({error: 'Not found' }, 404);
+    }
+    return c.json({
+      data: {id}
+    })
+
+  })
+.post('/:id/duplicate', verifyAuth(), zValidator('param', z.object({
+  id: z.string()
+
+})), async (c) => {
+  const auth= c.get('authUser');
+  const { id } = c.req.valid('param');
+
+  if (!auth.token?.id) {
+    return c.json({error: 'Unauthorized'}, 401)
+  }
+  console.log(auth)
+  const data = await db.select().from(projects).where(and(
+    eq(projects.id, id),
+    eq(projects.userId,auth.token.id)
+  ))
+  console.log('data data',data);
+  if (data.length === 0) {
+    return c.json({
+      error: 'Not found'
+    }, 404)
+  }
+  const project = data[0];
+  const duplicatedData = await db.insert(projects).values({
+    name: `Copy of ${project.name}`,
+    json: project.json,
+    width: project.width,
+    height: project.height,
+    userId: auth.token.id,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    thumbnailUrl: project.thumbnailUrl,
+    isTemplate: project.isTemplate,
+    isPro: project.isPro,
+  }).returning();
+  console.log(duplicatedData)
+  return c.json({data: duplicatedData[0]})
+})
   .get('/', verifyAuth(),
     zValidator('query', z.object({
       page: z.coerce.number(),
