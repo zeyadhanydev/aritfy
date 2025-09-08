@@ -6,6 +6,7 @@ import users from './users'
 import  projects  from './projects'
 import { AuthConfig, initAuthConfig } from '@hono/auth-js'
 import authConfig from '@/auth.config'
+import subscriptions from './subscriptions'
 // Edge runtime enables deploying to edge computing environments,
 // offering lower latency and faster response times by running
 // code closer to the user's geographic location
@@ -21,6 +22,7 @@ app.use('*', initAuthConfig(getAuthConfig));
 
 app.route('/images', images).
   route('/ai', ai).
+  route('/subscriptions', subscriptions).
   route('/projects', projects).
   route('/users' , users)
 

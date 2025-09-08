@@ -22,7 +22,7 @@ const EditorProjectIdPage = ({params}: EditorProjectIdPageProps) => {
  }
  if (isError) {
    return <div className='h-full flex flex-col gap-y-5 items-center justify-center'>
-     <TriangleAlert className='size-6 animate-spin text-muted-foreground'/>
+     <TriangleAlert className='size-6 text-muted-foreground'/>
      <p className='text-muted-foreground text-sm'>Failed to fetch project</p>
      <Button asChild variant='secondary'><Link href={'/'}>Back to Home</Link></Button>
    </div>

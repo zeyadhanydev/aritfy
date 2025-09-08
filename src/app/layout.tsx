@@ -29,15 +29,18 @@ export default async function RootLayout({
 	children: React.ReactNode;
 }>) {
 	const session = await auth();
+
 	return (
 		<SessionProvider session={session}>
 			<html lang="en" suppressHydrationWarning>
 				<body
 					className={`${geistSans.variable} ${geistMono.variable} antialiased`}
 				>
-					<Modals />
-					<Toaster />
-					<Providers>{children}</Providers>
+					<Providers>
+						<Modals />
+						<Toaster />
+						{children}
+					</Providers>
 				</body>
 			</html>
 		</SessionProvider>
