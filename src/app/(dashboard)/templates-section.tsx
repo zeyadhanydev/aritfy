@@ -5,14 +5,16 @@ import { Loader, TriangleAlert } from "lucide-react";
 import { TemplateCard } from "./template-card";
 import { useCreateProject } from "@/features/projects/api/use-create-project";
 import { useRouter } from "next/navigation";
+import { usePaywall } from "@/features/subscription/hooks/use-paywall";
 
 export const TemplatesSection = () => {
+	const paywall = usePaywall();
 	const { data, isLoading, isError } = useGetTemplates({
 		page: "1",
 		limit: "4",
 	});
 	const mutation = useCreateProject();
-	const router = useRouter()
+	const router = useRouter();
 	if (isLoading) {
 		return (
 			<div className="space-y-4">
@@ -38,19 +40,25 @@ export const TemplatesSection = () => {
 		return null;
 	}
 	const onClick = (template: any) => {
-	// TODO: check if the tempalate is pro
-	mutation.mutate({
-	    name:`${template.name} project`,
-			json: template.json,
-			width: template.width,
-			height: template.height
-	}, {
-	onSuccess: ({data}) => {
-	  router.push(`/editor/${data.id}`)
-	}
-	})
-
-	}
+		// TODO: check if the tempalate is pro
+		if (template.isPro && paywall.shouldBlock) {
+			paywall.triggerPaywall();
+			return;
+		}
+		mutation.mutate(
+			{
+				name: `${template.name} project`,
+				json: template.json,
+				width: template.width,
+				height: template.height,
+			},
+			{
+				onSuccess: ({ data }) => {
+					router.push(`/editor/${data.id}`);
+				},
+			},
+		);
+	};
 	return (
 		<div className="space-y-4">
 			<h3 className="font-medium text-lg">Start from a template</h3>
@@ -61,7 +69,6 @@ export const TemplatesSection = () => {
 						key={template.id}
 						onClick={() => onClick(template)}
 						height={template.height}
-
 						width={template.width}
 						isPro={template.isPro}
 						title={template.name}

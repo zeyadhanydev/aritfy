@@ -9,6 +9,7 @@ import { ToolSidebarHeader } from "@/features/editor/components/tool-sidebar-hea
 import type { ActiveTool, Editor } from "@/features/editor/types";
 import { cn } from "@/lib/utils";
 import { ToolSidebarClose } from "./tool-sidebar-close";
+import { usePaywall } from "@/features/subscription/hooks/use-paywall";
 
 interface RemoveBgSidebarProps {
 	activeTool: ActiveTool;
@@ -31,14 +32,19 @@ export const RemoveBgSidebar = ({
 		imageUrl,
 		error,
 		progress,
-		isClientSideAvailable
+		isClientSideAvailable,
 	} = useRemoveBackground({ preferClientSide: useClientSide });
+	const paywall = usePaywall();
 
 	const onClose = () => {
 		onChangeActiveTool("select");
 	};
 	const onClick = async () => {
-		/// TODO: Block with paywall if no credits left
+		if (paywall.shouldBlock) {
+			paywall.triggerPaywall();
+			return;
+		}
+
 		if (!imageSrc) return;
 
 		await removeBackground(imageSrc);
@@ -50,7 +56,7 @@ export const RemoveBgSidebar = ({
 	};
 
 	const toggleProcessingMode = () => {
-		setUseClientSide(prev => !prev);
+		setUseClientSide((prev) => !prev);
 	};
 
 	return (
@@ -93,10 +99,16 @@ export const RemoveBgSidebar = ({
 									className="flex items-center text-xs font-medium"
 									disabled={isLoading}
 								>
-									{useClientSide ?
-										<>Browser-based <ToggleRight className="ml-2 h-4 w-4 text-primary" /></> :
-										<>Server-based <ToggleLeft className="ml-2 h-4 w-4" /></>
-									}
+									{useClientSide ? (
+										<>
+											Browser-based{" "}
+											<ToggleRight className="ml-2 h-4 w-4 text-primary" />
+										</>
+									) : (
+										<>
+											Server-based <ToggleLeft className="ml-2 h-4 w-4" />
+										</>
+									)}
 								</button>
 							</div>
 						)}
@@ -109,10 +121,7 @@ export const RemoveBgSidebar = ({
 
 						<Button
 							onClick={onClick}
-							className={cn(
-								"w-full",
-								isLoading && "cursor-not-allowed",
-							)}
+							className={cn("w-full", isLoading && "cursor-not-allowed")}
 							disabled={isLoading}
 						>
 							{isLoading ? (

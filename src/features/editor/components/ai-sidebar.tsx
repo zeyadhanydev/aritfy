@@ -2,13 +2,20 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useGenerateImage } from "@/features/ai/api/use-generate-image";
 import { ToolSidebarHeader } from "@/features/editor/components/tool-sidebar-header";
 import type { ActiveTool, Editor } from "@/features/editor/types";
 import { cn } from "@/lib/utils";
 import { ToolSidebarClose } from "./tool-sidebar-close";
+import { usePaywall } from "@/features/subscription/hooks/use-paywall";
 
 interface AiSidebarProps {
 	activeTool: ActiveTool;
@@ -22,18 +29,20 @@ export const AiSidebar = ({
 	onChangeActiveTool,
 }: AiSidebarProps) => {
 	const [value, setValue] = useState("");
-	const [aiModel, setAiModel] = useState('google')
+	const [aiModel, setAiModel] = useState("google");
+	const paywall = usePaywall();
 	const mutation = useGenerateImage();
 
 	const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
-		// TODO: Block with paywall if no credits left
-		console.log(value)
-		console.log(aiModel);
+		if (paywall.shouldBlock) {
+			paywall.triggerPaywall();
+			return;
+		}
 		mutation.mutate(
 			{
 				prompt: value,
-				model: aiModel
+				model: aiModel,
 			},
 			{
 				onSuccess: ({ data }) => {
@@ -61,16 +70,22 @@ export const AiSidebar = ({
 
 			<ScrollArea>
 				<form onSubmit={onSubmit} className="p-4 space-y-6">
-				<Select value={aiModel} onValueChange={setAiModel}>
-				<SelectTrigger className="w-[180px]">
-				<SelectValue placeholder="AI Provider" />
-				</SelectTrigger>
-				<SelectContent>
-						<SelectItem value="google" key={'google'}>Google</SelectItem>
-						<SelectItem value="huggingface" key={'huggingface'}>Hugging Face</SelectItem>
-					<SelectItem value="artisanly" key={'artisanly'}>Artisanly</SelectItem>
-				</SelectContent>
-				</Select>
+					<Select value={aiModel} onValueChange={setAiModel}>
+						<SelectTrigger className="w-[180px]">
+							<SelectValue placeholder="AI Provider" />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="google" key={"google"}>
+								Google
+							</SelectItem>
+							<SelectItem value="huggingface" key={"huggingface"}>
+								Hugging Face
+							</SelectItem>
+							<SelectItem value="artisanly" key={"artisanly"}>
+								Artisanly
+							</SelectItem>
+						</SelectContent>
+					</Select>
 					<Textarea
 						placeholder="Describe the image you want to generate..."
 						value={value}
@@ -82,7 +97,11 @@ export const AiSidebar = ({
 						minLength={3}
 					/>
 
-					<Button 	disabled={mutation.isPending} type="submit" className="w-full">
+					<Button
+						disabled={mutation.isPending}
+						type="submit"
+						className="w-full"
+					>
 						Generate
 					</Button>
 				</form>

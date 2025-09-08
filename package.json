@@ -90,7 +90,8 @@
 		"use-file-picker": "^2.1.4",
 		"uuidv4": "^6.2.13",
 		"vaul": "^1.1.2",
-		"zod": "^4.1.0"
+		"zod": "^4.1.0",
+		"zustand": "^5.0.8"
 	},
 	"devDependencies": {
 		"@eslint/eslintrc": "^3",

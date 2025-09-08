@@ -8,6 +8,7 @@ import { FilterSidebar } from "@/features/editor/components/filter-sidebar";
 import { FontSidebar } from "@/features/editor/components/font-sidebar";
 import { Footer } from "@/features/editor/components/footer";
 import { ImageSidebar } from "@/features/editor/components/image-sidebar";
+import { TemplateSidebar } from "@/features/editor/components/template-sidebar";
 import { Navbar } from "@/features/editor/components/navbar";
 import { OpacitySidebar } from "@/features/editor/components/opacity-sidebar";
 import { RemoveBgSidebar } from "@/features/editor/components/remove-bg-sidebar";
@@ -133,6 +134,11 @@ export const Editor = ({ initialData }: EditorProps) => {
 					onChangeActiveTool={onChangeActiveTool}
 				/>
 				<FontSidebar
+					editor={editor}
+					activeTool={activeTool}
+					onChangeActiveTool={onChangeActiveTool}
+				/>
+				<TemplateSidebar
 					editor={editor}
 					activeTool={activeTool}
 					onChangeActiveTool={onChangeActiveTool}
