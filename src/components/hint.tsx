@@ -29,13 +29,14 @@ export const Hint = ({
 			<Tooltip delayDuration={100}>
 				<TooltipTrigger asChild>{children}</TooltipTrigger>
 				<TooltipContent
-					className="text-background bg-background border-background/10"
 					align={align}
 					side={side}
 					sideOffset={sideOffset}
 					alignOffset={alignOffset}
 				>
-					<p className="font-semibold capitalize">{label}</p>
+					<p className="font-semibold capitalize text-black dark:text-white">
+						{label}
+					</p>
 				</TooltipContent>
 			</Tooltip>
 		</TooltipProvider>
