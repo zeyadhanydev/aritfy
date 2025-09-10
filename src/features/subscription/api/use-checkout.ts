@@ -22,7 +22,7 @@ export const useCheckout = () => {
 			window.location.href = data;
 		},
 		onError: () => {
-			toast.error("Faild to create session");
+			toast.error("Failed to create session");
 		},
 	});
 	return mutation;

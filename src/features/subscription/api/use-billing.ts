@@ -1,6 +1,5 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 
-import type { InferResponseType } from "hono";
 import { toast } from "sonner";
 import { client } from "@/lib/hono";
 
@@ -17,7 +16,7 @@ export const useBilling = () => {
 			window.location.href = data;
 		},
 		onError: () => {
-			toast.error("Faild to create session");
+			toast.error("Failed to create session");
 		},
 	});
 	return mutation;
