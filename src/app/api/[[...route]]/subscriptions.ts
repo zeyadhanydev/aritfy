@@ -140,7 +140,7 @@ const app = new Hono()
               .set({
                 status: subscription.status,
                 currentPeriodEnd: new Date(
-                  subscription.current_period_end * 1000
+                  subscription.items.data[0].current_period_end * 1000
                 ),
                 updatedAt: new Date(),
               })
@@ -155,7 +155,7 @@ const app = new Hono()
                 customerId: subscription.customer as string,
                 priceId: subscription.items.data[0].price.product as string,
                 currentPeriodEnd: new Date(
-                  subscription.current_period_end * 1000
+                  subscription.items.data[0].current_period_end * 1000
                 ),
                 createdAt: new Date(),
                 updatedAt: new Date(),
@@ -169,16 +169,16 @@ const app = new Hono()
       }
 
       if (event.type === "invoice.payment_succeeded") {
-        const invoice = event.data.object as Stripe.Invoice;
+        const invoice = event.data as Stripe.InvoicePaymentSucceededEvent.Data;
 
         // Skip if no subscription (e.g., one-time payments)
-        if (!invoice.subscription) {
+        if (!invoice.object.id) {
           console.log("Invoice has no subscription, skipping");
           return c.json(null, 200);
         }
 
         const subscription = await stripe.subscriptions.retrieve(
-          invoice.subscription as string,
+          invoice.object.id as string,
         );
 
         console.log(`Updating subscription after payment success: ${subscription.id}`);
@@ -200,7 +200,7 @@ const app = new Hono()
             .set({
               status: subscription.status,
               currentPeriodEnd: new Date(
-                subscription.current_period_end * 1000,
+                subscription.items.data[0].current_period_end * 1000,
               ),
               updatedAt: new Date(),
             })
@@ -234,7 +234,7 @@ const app = new Hono()
             .set({
               status: subscription.status,
               currentPeriodEnd: new Date(
-                subscription.current_period_end * 1000,
+                subscription.items.data[0].current_period_end * 1000,
               ),
               updatedAt: new Date(),
             })
@@ -281,13 +281,13 @@ const app = new Hono()
         const invoice = event.data.object as Stripe.Invoice;
 
         // Skip if no subscription
-        if (!invoice.subscription) {
+        if (!invoice.id) {
           console.log("Invoice has no subscription, skipping payment failure update");
           return c.json(null, 200);
         }
 
         const subscription = await stripe.subscriptions.retrieve(
-          invoice.subscription as string,
+          invoice.id as string,
         );
 
         console.log(`Updating subscription after payment failure: ${subscription.id} to ${subscription.status}`);
