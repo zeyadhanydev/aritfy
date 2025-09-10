@@ -64,12 +64,12 @@ console.log(image)
   zValidator('json',
     z.object({
     prompt: z.string(),
-    model : z.enum(['google', 'huggingface', 'artisanly']).default('google').optional()
+    model : z.enum(['google', 'huggingface', 'aritfy']).default('google').optional()
   })),
   async (c) => {
     const {prompt,model} = c.req.valid('json')
     console.log(model)
-    if (model === 'artisanly') {
+    if (model === 'aritfy') {
       console.log(process.env.GENERATE_IMAGE_MODAL_ENDPOINT,process.env.API_KEY)
         try {
           const response = await fetch(`${process.env.GENERATE_IMAGE_MODAL_ENDPOINT}?prompt=${encodeURIComponent(prompt)}`, {

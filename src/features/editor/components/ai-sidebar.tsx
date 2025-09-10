@@ -81,8 +81,8 @@ export const AiSidebar = ({
 							<SelectItem value="huggingface" key={"huggingface"}>
 								Hugging Face
 							</SelectItem>
-							<SelectItem value="artisanly" key={"artisanly"}>
-								Artisanly
+							<SelectItem value="aritfy" key={"aritfy"}>
+								Aritfy
 							</SelectItem>
 						</SelectContent>
 					</Select>

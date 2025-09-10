@@ -10,7 +10,7 @@ export const Logo = () => {
 				<Image
 					src={"/logo.svg"}
 					fill
-					alt="Image AI"
+					alt="Aritfy"
 					className="shrink-0 hover:opacity-75 transition"
 					priority
 				/>

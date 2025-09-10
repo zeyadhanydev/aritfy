@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { BackgroundRemover } from "@/components/background-remover";
 
 export const metadata: Metadata = {
-	title: "Remove Background - Image AI",
+	title: "Remove Background - Aritfy",
 	description: "Remove the background from any image using AI",
 };
 

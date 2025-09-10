@@ -19,7 +19,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-	title: "Artisan AI",
+	title: "Aritfy AI",
 	description: "Canva with AI image generation",
 	icons: "./logo.svg",
 };
