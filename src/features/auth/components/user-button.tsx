@@ -1,11 +1,9 @@
 "use client";
-import { Loader, LogOut } from "lucide-react";
-import { useSession } from "next-auth/react";
+import { Crown, Loader, LogOut } from "lucide-react";
 import { BsCreditCard } from "react-icons/bs";
-import { IoLogOut } from "react-icons/io5";
-import { signOut } from "@/auth";
+import { motion } from "framer-motion";
+import { signOut, useSession } from "next-auth/react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -13,7 +11,20 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { usePaywall } from "@/features/subscription/hooks/use-paywall";
+import { useBilling } from "@/features/subscription/api/use-billing";
+import { useGetSubscription } from "@/features/subscription/subscriptions/api/use-get-subscription";
 export const UserButton = () => {
+	const paywall = usePaywall();
+	const mutation = useBilling();
+	const { data: subscription, isLoading } = useGetSubscription();
+	const onClick = () => {
+		if (paywall.shouldBlock) {
+			paywall.triggerPaywall();
+			return;
+		}
+		mutation.mutate();
+	};
 	const session = useSession();
 	if (session.status === "loading") {
 		return <Loader className="size-4 animate-spin text-muted-foreground" />;
@@ -24,12 +35,18 @@ export const UserButton = () => {
 	const name = session.data.user.name!;
 	const imageUrl = session.data.user.image!;
 	return (
-		<div>
-			{/*		// TODO: add crown if uer is premium */}
+		<div className="relative overflow-hidden rounded-full size-11 flex items-center justify-center">
+			{subscription?.active && !isLoading && (
+				<div className="absolute size-12 bg-gradient-conic from-yellow-400 via-yellow-500 to-yellow-600 animate-spin z-0" />
+			)}
 			<DropdownMenu modal={false}>
 				<DropdownMenuTrigger>
-					<Avatar className="size-10 hover:opacity-75 transition">
-						<AvatarImage alt="name" src={imageUrl || ""} />
+					<Avatar className="size-10 transition z-1">
+						<AvatarImage
+							alt="name"
+							className="hover:scale-125 transition duration-300"
+							src={imageUrl || ""}
+						/>
 						<AvatarFallback
 							className="bg-blue-500 font-medium text-white
 						"
@@ -40,19 +57,17 @@ export const UserButton = () => {
 				</DropdownMenuTrigger>
 				<DropdownMenuContent align="end" className="w-60">
 					<DropdownMenuItem
-						className="h-10"
-						onClick={() => {}}
-						disabled={false}
+						className="h-10 cursor-pointer"
+						onClick={onClick}
+						disabled={mutation.isPending}
 					>
 						<BsCreditCard className="size-4 mr-2" />
 						Billing
 					</DropdownMenuItem>
 					<DropdownMenuSeparator />
 					<DropdownMenuItem
-						className="h-10"
-						onClick={() => {
-							signOut();
-						}}
+						className="h-10 cursor-pointer"
+						onClick={() => signOut()}
 					>
 						<LogOut className="size-4 mr-2"></LogOut>
 						Log out

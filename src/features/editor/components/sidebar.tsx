@@ -19,8 +19,8 @@ interface SidebarProps {
 
 export const Sidebar = ({ activeTool, onChangeActiveTool }: SidebarProps) => {
 	return (
-		<aside className="bg-white flex flex-col h-full w-[100px] border-r overflow-y-auto">
-			<ul className="flex flex-col ">
+		<aside className="bg-background flex flex-col h-full w-[100px] border-r overflow-y-auto">
+			<ul className="flex flex-col">
 				<SidebarItem
 					icon={LayoutTemplate}
 					label="Design"

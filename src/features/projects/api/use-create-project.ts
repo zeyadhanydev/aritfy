@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import type { InferRequestType, InferResponseType } from "hono";
+import type { InferResponseType } from "hono";
 import { toast } from "sonner";
 import { client } from "@/lib/hono";
 
@@ -8,7 +8,6 @@ type ResponseType = InferResponseType<
 	(typeof client.api.projects)["$post"],
 	200
 >;
-type RequestType = InferRequestType<(typeof client.api.projects)["$post"]>;
 
 export const useCreateProject = () => {
 	const queryClient = useQueryClient();
@@ -29,7 +28,7 @@ export const useCreateProject = () => {
 			});
 		},
 		onError: () => {
-			toast.error("Faild to create project");
+			toast.error("Failed to create project");
 		},
 	});
 	return mutation;

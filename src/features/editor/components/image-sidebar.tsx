@@ -31,7 +31,7 @@ export const ImageSidebar = ({
 	return (
 		<aside
 			className={cn(
-				"bg-white relative border-r z-[40] w-[360px] h-full flex flex-col",
+				"bg-background relative border-r z-[40] w-[360px] h-full flex flex-col",
 				activeTool === "images" ? "visible" : "hidden",
 			)}
 		>
@@ -40,20 +40,19 @@ export const ImageSidebar = ({
 				description="Add Imagas to your canvas"
 			/>
 			<div className="p-4 border-b">
-			<UploadButton
-				endpoint="imageUploader"
-				onClientUploadComplete={(res) => {
-					editor?.addImage(res[0].url);
-				}}
-				appearance={{
-					button: "w-full text-sm font-medium",
-					allowedContent: "hidden"
-				}}
-				content={{
-					button: "Upload Image"
-				}}
-			/>
-
+				<UploadButton
+					endpoint="imageUploader"
+					onClientUploadComplete={(res) => {
+						editor?.addImage(res[0].url);
+					}}
+					appearance={{
+						button: "w-full text-sm font-medium",
+						allowedContent: "hidden",
+					}}
+					content={{
+						button: "Upload Image",
+					}}
+				/>
 			</div>
 			{isLoading && (
 				<div className="flex items-center justify-center flex-1">
@@ -69,7 +68,6 @@ export const ImageSidebar = ({
 				</div>
 			)}
 
-
 			<ScrollArea className="flex-1 overflow-y-auto">
 				<div className="p-4 grid grid-cols-2 gap-4">
 					{data?.map((image) => {
@@ -80,8 +78,7 @@ export const ImageSidebar = ({
 								className="relative w-full h-[100px] group hover:opacity-75 transition bg-muted rounded-sm overflow-hidden border"
 								onClick={() => editor?.addImage(image.urls.regular)}
 							>
-								<Image
-									fill
+								<img
 									src={image.urls.small}
 									alt={image.alt_description || ""}
 									className="object-cover"

@@ -27,34 +27,37 @@ export const FilterSidebar = ({
 	return (
 		<aside
 			className={cn(
-				"bg-white relative border-r z-[40] w-[360px] h-full flex flex-col",
+				"bg-background relative border-r z-[40] w-[360px] h-full flex flex-col",
 				activeTool === "filter" ? "visible" : "hidden",
 			)}
 		>
-			<ToolSidebarHeader title="Filters" description="Applay a filter to selected image" />
+			<ToolSidebarHeader
+				title="Filters"
+				description="Applay a filter to selected image"
+			/>
 
 			<ScrollArea className="flex-1 overflow-y-auto">
-			<div className="p-4 space-y-1 border-b">
-				{filters.map((filter) => {
-					return (
-						<Button
-							key={filter}
-														className={cn(
-								"w-full h-16 justify-start text-left",
-								selectedFilter === filter && "border-blue-500 border"
-							)}
-							variant={"secondary"}
-							size={"lg"}
-							onClick={() => {
-								editor?.changeImageFilter(filter);
-								setSelectedFilter(filter);
-							}}
-						>
+				<div className="p-4 space-y-1 border-b">
+					{filters.map((filter) => {
+						return (
+							<Button
+								key={filter}
+								className={cn(
+									"w-full h-16 justify-start text-left",
+									selectedFilter === filter && "border-blue-500 border",
+								)}
+								variant={"secondary"}
+								size={"lg"}
+								onClick={() => {
+									editor?.changeImageFilter(filter);
+									setSelectedFilter(filter);
+								}}
+							>
 								{filter}
-						</Button>
-					);
-				})}
-			</div>
+							</Button>
+						);
+					})}
+				</div>
 			</ScrollArea>
 
 			<ToolSidebarClose onClick={onClose} />

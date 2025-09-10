@@ -30,10 +30,10 @@ export const OpacitySidebar = ({
 		[editor?.selectedObjects],
 	);
 	useEffect(() => {
-    if (selectedObject) {
-      setOpacity(selectedObject.get('opacity') || 1)
-			}
-	}, [selectedObject])
+		if (selectedObject) {
+			setOpacity(selectedObject.get("opacity") || 1);
+		}
+	}, [selectedObject]);
 	const onChange = (value: number) => {
 		editor?.changeOpacity(value);
 		setOpacity(value);
@@ -42,7 +42,7 @@ export const OpacitySidebar = ({
 	return (
 		<aside
 			className={cn(
-				"bg-white relative border-r z-[40] w-[360px] h-full flex flex-col",
+				"bg-background relative border-r z-[40] w-[360px] h-full flex flex-col",
 				activeTool === "opacity" ? "visible" : "hidden",
 			)}
 		>

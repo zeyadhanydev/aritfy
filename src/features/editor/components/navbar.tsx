@@ -26,6 +26,7 @@ import { Logo } from "@/features/editor/components/logo";
 import type { ActiveTool, Editor } from "@/features/editor/types";
 import { cn } from "@/lib/utils";
 import { useMutationState } from "@tanstack/react-query";
+import { ModeToggle } from "@/components/mode-toggle";
 
 interface NavbarProps {
 	editor: Editor | undefined;
@@ -66,7 +67,7 @@ export const Navbar = ({
 		},
 	});
 	return (
-		<div className="w-full flex items-center p-4 h-[68px] gap-x-8 border-b lg:pl-[34px]">
+		<div className="w-full flex items-center p-4 h-[68px] gap-x-8 border-b bg-background lg:pl-[34px]">
 			<Logo />
 			<div className="w-full flex items-center gap-x-1 h-full">
 				<DropdownMenu modal={false}>
@@ -216,8 +217,10 @@ export const Navbar = ({
 							</DropdownMenuItem>
 						</DropdownMenuContent>
 					</DropdownMenu>
-					{/* add user icon button  */}
-					<UserButton />
+					<div className="flex items-center gap-x-4">
+						<ModeToggle />
+						<UserButton />
+					</div>
 				</div>
 			</div>
 		</div>

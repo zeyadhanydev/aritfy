@@ -176,7 +176,11 @@ const app = new Hono()
       return c.json({ error: 'Unauthroized' }, 401)
     }
     const data = await db.insert(projects).values({
-      name, json, width, height, userId: auth.token.id,
+      name,
+      json,
+      width,
+      height,
+      userId: auth.token.id,
       createdAt: new Date(),
       updatedAt: new Date(),
     }).returning();

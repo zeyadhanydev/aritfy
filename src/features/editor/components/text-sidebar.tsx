@@ -26,7 +26,7 @@ export const TextSidebar = ({
 	return (
 		<aside
 			className={cn(
-				"bg-white relative border-r z-[40] w-[360px] h-full flex flex-col",
+				"bg-background relative border-r z-[40] w-[360px] h-full flex flex-col",
 				activeTool === "text" ? "visible" : "hidden",
 			)}
 		>
@@ -35,7 +35,8 @@ export const TextSidebar = ({
 			<ScrollArea>
 				<div className="p-4 space-y-4 border-b">
 					<Button className="w-full" onClick={() => editor?.addText("Textbox")}>
-						Add a textbox						</Button>
+						Add a textbox{" "}
+					</Button>
 					<Button
 						className="w-full h-16"
 						variant={"secondary"}
@@ -48,7 +49,7 @@ export const TextSidebar = ({
 						}
 					>
 						<div className="text-3xl font-bold">Add a heading</div>
-							</Button>
+					</Button>
 					<Button
 						className="w-full h-16"
 						variant={"secondary"}
@@ -74,7 +75,7 @@ export const TextSidebar = ({
 					>
 						Add a subheading
 					</Button>
-					</div>
+				</div>
 			</ScrollArea>
 
 			<ToolSidebarClose onClick={onClose} />

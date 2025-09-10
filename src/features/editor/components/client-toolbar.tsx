@@ -14,12 +14,7 @@ import {
 import type React from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { BsBorderWidth } from "react-icons/bs";
-import {
-	FaBold,
-	FaItalic,
-	FaStrikethrough,
-	FaUnderline,
-} from "react-icons/fa";
+import { FaBold, FaItalic, FaStrikethrough, FaUnderline } from "react-icons/fa";
 import { RxTransparencyGrid } from "react-icons/rx";
 import { TbColorFilter } from "react-icons/tb";
 import { Hint } from "@/components/hint";
@@ -249,7 +244,7 @@ export const ClientToolbar = ({
 	// Early return for no editor or no selection
 	if (!editor || !hasSelection) {
 		return (
-			<div className="shrink-0 h-[56px] border-b bg-white w-full flex items-center overflow-x-auto z-[49] p-2 gap-x-2">
+			<div className="shrink-0 h-[56px] border-b bg-background w-full flex items-center overflow-x-auto z-[49] p-2 gap-x-2">
 				<div className="text-sm text-muted-foreground">
 					Select an object to edit
 				</div>
@@ -258,7 +253,7 @@ export const ClientToolbar = ({
 	}
 
 	return (
-		<div className="shrink-0 h-[56px] border-b bg-white w-full flex items-center overflow-x-auto z-[49] p-2 gap-x-2">
+		<div className="shrink-0 h-[56px] border-b bg-background w-full flex items-center overflow-x-auto z-[49] p-2 gap-x-2">
 			{/* Fill Color */}
 			{!isImage && (
 				<ToolbarButton
@@ -434,13 +429,15 @@ export const ClientToolbar = ({
 			<ToolbarButton label="Delete" onClick={() => editor.delete()}>
 				<TrashIcon className="size-4" />
 			</ToolbarButton>
-			<ToolbarButton label="Duplicate" onClick={() => {
-			 editor.onCopy()
-				editor.onPaste()
-			}}>
+			<ToolbarButton
+				label="Duplicate"
+				onClick={() => {
+					editor.onCopy();
+					editor.onPaste();
+				}}
+			>
 				<CopyIcon className="size-4" />
 			</ToolbarButton>
-
 		</div>
 	);
 };

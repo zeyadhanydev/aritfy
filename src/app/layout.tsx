@@ -6,6 +6,7 @@ import { Toaster } from "sonner";
 import { auth } from "@/auth";
 import { Providers } from "@/components/providers";
 import { Modals } from "@/components/modals";
+import { ThemeProvider } from "@/components/theme-provider";
 
 const geistSans = Geist({
 	variable: "--font-geist-sans",
@@ -20,7 +21,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
 	title: "Artisan AI",
 	description: "Canva with AI image generation",
-	icons: "logo.svg",
+	icons: "./logo.svg",
 };
 
 export default async function RootLayout({
@@ -37,9 +38,16 @@ export default async function RootLayout({
 					className={`${geistSans.variable} ${geistMono.variable} antialiased`}
 				>
 					<Providers>
-						<Modals />
-						<Toaster />
-						{children}
+						<ThemeProvider
+							attribute="class"
+							defaultTheme="system"
+							enableSystem
+							disableTransitionOnChange
+						>
+							<Modals />
+							<Toaster />
+							{children}
+						</ThemeProvider>
 					</Providers>
 				</body>
 			</html>
