@@ -20,7 +20,7 @@ const ClientToolbar = dynamic(
 
 // Simple skeleton loader to show during client-side loading
 const ToolbarSkeleton = () => (
-	<div className="shrink-0 h-[56px] border-b bg-white w-full flex items-center overflow-x-auto z-[49] p-2 gap-x-2">
+	<div className="shrink-0 h-[56px] border-b bg-background w-full flex items-center overflow-x-auto z-[49] p-2 gap-x-2">
 		<div className="w-full h-full flex items-center justify-start">
 			<div className="animate-pulse flex space-x-2">
 				{Array(5)

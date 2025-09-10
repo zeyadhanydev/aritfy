@@ -100,7 +100,7 @@ export const Navbar = ({
 						onClick={() => {
 							onChangeActiveTool("select");
 						}}
-						className={cn(activeTool === "select" && "bg-gray-100")}
+						className={cn(activeTool === "select" && "bg-background/50")}
 					>
 						<MousePointerClick className="size-4" />
 					</Button>
