@@ -402,6 +402,246 @@ const buildEditor = ({
 			);
 			addToCanvas(object);
 		},
+		addStar() {
+			const HEIGHT = TRIANGLE_OPTIONS.height;
+			const WIDTH = TRIANGLE_OPTIONS.width;
+			const outerRadius = WIDTH / 2;
+			const innerRadius = outerRadius * 0.4;
+			const centerX = WIDTH / 2;
+			const centerY = HEIGHT / 2;
+			const points = [];
+
+			for (let i = 0; i < 10; i++) {
+				const angle = (i * Math.PI * 2) / 10 - Math.PI / 2;
+				const radius = i % 2 === 0 ? outerRadius : innerRadius;
+				points.push({
+					x: centerX + Math.cos(angle) * radius,
+					y: centerY + Math.sin(angle) * radius,
+				});
+			}
+
+			const object = new fabric.Polygon(points, {
+				...TRIANGLE_OPTIONS,
+				fill: fillColor,
+				stroke: strokeColor,
+				strokeWidth: strokeWidth,
+				strokeDashArray: strokeDashArray,
+			});
+			addToCanvas(object);
+		},
+		addPentagon() {
+			const HEIGHT = TRIANGLE_OPTIONS.height;
+			const WIDTH = TRIANGLE_OPTIONS.width;
+			const radius = WIDTH / 2;
+			const centerX = WIDTH / 2;
+			const centerY = HEIGHT / 2;
+			const points = [];
+
+			for (let i = 0; i < 5; i++) {
+				const angle = (i * Math.PI * 2) / 5 - Math.PI / 2;
+				points.push({
+					x: centerX + Math.cos(angle) * radius,
+					y: centerY + Math.sin(angle) * radius,
+				});
+			}
+
+			const object = new fabric.Polygon(points, {
+				...TRIANGLE_OPTIONS,
+				fill: fillColor,
+				stroke: strokeColor,
+				strokeWidth: strokeWidth,
+				strokeDashArray: strokeDashArray,
+			});
+			addToCanvas(object);
+		},
+		addHexagon() {
+			const HEIGHT = TRIANGLE_OPTIONS.height;
+			const WIDTH = TRIANGLE_OPTIONS.width;
+			const radius = WIDTH / 2;
+			const centerX = WIDTH / 2;
+			const centerY = HEIGHT / 2;
+			const points = [];
+
+			for (let i = 0; i < 6; i++) {
+				const angle = (i * Math.PI * 2) / 6;
+				points.push({
+					x: centerX + Math.cos(angle) * radius,
+					y: centerY + Math.sin(angle) * radius,
+				});
+			}
+
+			const object = new fabric.Polygon(points, {
+				...TRIANGLE_OPTIONS,
+				fill: fillColor,
+				stroke: strokeColor,
+				strokeWidth: strokeWidth,
+				strokeDashArray: strokeDashArray,
+			});
+			addToCanvas(object);
+		},
+		addArrowRight() {
+			const HEIGHT = TRIANGLE_OPTIONS.height;
+			const WIDTH = TRIANGLE_OPTIONS.width;
+			const points = [
+				{ x: 0, y: HEIGHT * 0.3 },
+				{ x: WIDTH * 0.7, y: HEIGHT * 0.3 },
+				{ x: WIDTH * 0.7, y: 0 },
+				{ x: WIDTH, y: HEIGHT / 2 },
+				{ x: WIDTH * 0.7, y: HEIGHT },
+				{ x: WIDTH * 0.7, y: HEIGHT * 0.7 },
+				{ x: 0, y: HEIGHT * 0.7 },
+			];
+
+			const object = new fabric.Polygon(points, {
+				...TRIANGLE_OPTIONS,
+				fill: fillColor,
+				stroke: strokeColor,
+				strokeWidth: strokeWidth,
+				strokeDashArray: strokeDashArray,
+			});
+			addToCanvas(object);
+		},
+		addArrowLeft() {
+			const HEIGHT = TRIANGLE_OPTIONS.height;
+			const WIDTH = TRIANGLE_OPTIONS.width;
+			const points = [
+				{ x: WIDTH, y: HEIGHT * 0.3 },
+				{ x: WIDTH * 0.3, y: HEIGHT * 0.3 },
+				{ x: WIDTH * 0.3, y: 0 },
+				{ x: 0, y: HEIGHT / 2 },
+				{ x: WIDTH * 0.3, y: HEIGHT },
+				{ x: WIDTH * 0.3, y: HEIGHT * 0.7 },
+				{ x: WIDTH, y: HEIGHT * 0.7 },
+			];
+
+			const object = new fabric.Polygon(points, {
+				...TRIANGLE_OPTIONS,
+				fill: fillColor,
+				stroke: strokeColor,
+				strokeWidth: strokeWidth,
+				strokeDashArray: strokeDashArray,
+			});
+			addToCanvas(object);
+		},
+		addArrowUp() {
+			const HEIGHT = TRIANGLE_OPTIONS.height;
+			const WIDTH = TRIANGLE_OPTIONS.width;
+			const points = [
+				{ x: WIDTH * 0.3, y: HEIGHT },
+				{ x: WIDTH * 0.3, y: HEIGHT * 0.3 },
+				{ x: 0, y: HEIGHT * 0.3 },
+				{ x: WIDTH / 2, y: 0 },
+				{ x: WIDTH, y: HEIGHT * 0.3 },
+				{ x: WIDTH * 0.7, y: HEIGHT * 0.3 },
+				{ x: WIDTH * 0.7, y: HEIGHT },
+			];
+
+			const object = new fabric.Polygon(points, {
+				...TRIANGLE_OPTIONS,
+				fill: fillColor,
+				stroke: strokeColor,
+				strokeWidth: strokeWidth,
+				strokeDashArray: strokeDashArray,
+			});
+			addToCanvas(object);
+		},
+		addArrowDown() {
+			const HEIGHT = TRIANGLE_OPTIONS.height;
+			const WIDTH = TRIANGLE_OPTIONS.width;
+			const points = [
+				{ x: WIDTH * 0.3, y: 0 },
+				{ x: WIDTH * 0.3, y: HEIGHT * 0.7 },
+				{ x: 0, y: HEIGHT * 0.7 },
+				{ x: WIDTH / 2, y: HEIGHT },
+				{ x: WIDTH, y: HEIGHT * 0.7 },
+				{ x: WIDTH * 0.7, y: HEIGHT * 0.7 },
+				{ x: WIDTH * 0.7, y: 0 },
+			];
+
+			const object = new fabric.Polygon(points, {
+				...TRIANGLE_OPTIONS,
+				fill: fillColor,
+				stroke: strokeColor,
+				strokeWidth: strokeWidth,
+				strokeDashArray: strokeDashArray,
+			});
+			addToCanvas(object);
+		},
+		addHeart() {
+			const HEIGHT = TRIANGLE_OPTIONS.height;
+			const WIDTH = TRIANGLE_OPTIONS.width;
+			const centerX = WIDTH / 2;
+			const topY = HEIGHT * 0.3;
+			const points = [];
+
+			// Left curve of heart
+			for (let i = 0; i <= 10; i++) {
+				const angle = Math.PI - (i / 10) * Math.PI;
+				const x = centerX - WIDTH * 0.25 + WIDTH * 0.25 * Math.cos(angle);
+				const y = topY + HEIGHT * 0.15 * Math.sin(angle);
+				points.push({ x, y });
+			}
+
+			// Right curve of heart
+			for (let i = 0; i <= 10; i++) {
+				const angle = (i / 10) * Math.PI;
+				const x = centerX + WIDTH * 0.25 + WIDTH * 0.25 * Math.cos(angle);
+				const y = topY + HEIGHT * 0.15 * Math.sin(angle);
+				points.push({ x, y });
+			}
+
+			// Bottom point
+			points.push({ x: centerX, y: HEIGHT * 0.9 });
+
+			const object = new fabric.Polygon(points, {
+				...TRIANGLE_OPTIONS,
+				fill: fillColor,
+				stroke: strokeColor,
+				strokeWidth: strokeWidth,
+				strokeDashArray: strokeDashArray,
+			});
+			addToCanvas(object);
+		},
+		addPlus() {
+			const HEIGHT = TRIANGLE_OPTIONS.height;
+			const WIDTH = TRIANGLE_OPTIONS.width;
+			const thickness = WIDTH * 0.2;
+			const points = [
+				{ x: WIDTH / 2 - thickness / 2, y: 0 },
+				{ x: WIDTH / 2 + thickness / 2, y: 0 },
+				{ x: WIDTH / 2 + thickness / 2, y: HEIGHT / 2 - thickness / 2 },
+				{ x: WIDTH, y: HEIGHT / 2 - thickness / 2 },
+				{ x: WIDTH, y: HEIGHT / 2 + thickness / 2 },
+				{ x: WIDTH / 2 + thickness / 2, y: HEIGHT / 2 + thickness / 2 },
+				{ x: WIDTH / 2 + thickness / 2, y: HEIGHT },
+				{ x: WIDTH / 2 - thickness / 2, y: HEIGHT },
+				{ x: WIDTH / 2 - thickness / 2, y: HEIGHT / 2 + thickness / 2 },
+				{ x: 0, y: HEIGHT / 2 + thickness / 2 },
+				{ x: 0, y: HEIGHT / 2 - thickness / 2 },
+				{ x: WIDTH / 2 - thickness / 2, y: HEIGHT / 2 - thickness / 2 },
+			];
+
+			const object = new fabric.Polygon(points, {
+				...TRIANGLE_OPTIONS,
+				fill: fillColor,
+				stroke: strokeColor,
+				strokeWidth: strokeWidth,
+				strokeDashArray: strokeDashArray,
+			});
+			addToCanvas(object);
+		},
+		addEllipse() {
+			const object = new fabric.Ellipse({
+				...CIRCLE_OPTIONS,
+				rx: CIRCLE_OPTIONS.radius,
+				ry: CIRCLE_OPTIONS.radius * 0.6,
+				fill: fillColor,
+				stroke: strokeColor,
+				strokeWidth: strokeWidth,
+				strokeDashArray: strokeDashArray,
+			});
+			addToCanvas(object);
+		},
 		getActiveFillColor: () => {
 			const selectedObject = selectedObjects[0];
 			if (!selectedObject) {

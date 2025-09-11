@@ -103,7 +103,8 @@ export type ActiveTool =
 	| "settings"
 	| "ai"
 	| "remove-bg"
-	| "templates";
+	| "templates"
+	| "move";
 
 export const FILL_COLOR = "rgba(0,0,0,1)";
 export const STROKE_COLOR = "rgba(0,0,0,1)";
@@ -199,6 +200,18 @@ export interface Editor {
 	addTriangle: () => void;
 	addInverseTriangle: () => void;
 	addDiamond: () => void;
+	addStar: () => void;
+	addPentagon: () => void;
+	addHexagon: () => void;
+	addArrowRight: () => void;
+	addArrowLeft: () => void;
+	addArrowUp: () => void;
+	addArrowDown: () => void;
+	addHeart: () => void;
+	addPlus: () => void;
+	addEllipse: () => void;
+	enableMoveMode: () => void;
+	disableMoveMode: () => void;
 	changeFillColor: (value: string) => void;
 	changeStrokeColor: (value: string) => void;
 	changeStrokeWidth: (value: number) => void;

@@ -11,7 +11,7 @@ export const TemplatesSection = () => {
 	const paywall = usePaywall();
 	const { data, isLoading, isError } = useGetTemplates({
 		page: "1",
-		limit: "4",
+		limit: "20",
 	});
 	const mutation = useCreateProject();
 	const router = useRouter();
