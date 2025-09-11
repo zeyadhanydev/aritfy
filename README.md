@@ -1,4 +1,4 @@
-![Aritfy Logo](./public/logo.png)
+![Aritfy Logo](./aritfy.png)
 
 # Aritfy - Advanced Design Editor & Presentation Tool
 
