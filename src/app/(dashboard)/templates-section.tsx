@@ -60,9 +60,16 @@ export const TemplatesSection = () => {
 		);
 	};
 	return (
-		<div className="space-y-4">
-			<h3 className="font-medium text-lg">Start from a template</h3>
-			<div className="grid grid-cols-2 md:grid-cols-4 mt-4 gap-4">
+		<div className="space-y-6">
+			<div className="flex items-center justify-between">
+				<h3 className="font-semibold text-xl text-gray-900 dark:text-gray-100">
+					Start from a template
+				</h3>
+				<p className="text-sm text-gray-500 dark:text-gray-400">
+					Choose from our collection of professional templates
+				</p>
+			</div>
+			<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
 				{data.map((template) => (
 					<TemplateCard
 						imgSrc={template.thumbnailUrl || ""}
@@ -73,7 +80,10 @@ export const TemplatesSection = () => {
 						isPro={template.isPro}
 						title={template.name}
 						disabled={mutation.isPending}
-						description={`${template.width} x ${template.height} px`}
+						description={
+							template.description ||
+							`Professional ${template.name.toLowerCase()} template`
+						}
 					/>
 				))}
 			</div>

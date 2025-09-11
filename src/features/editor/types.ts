@@ -103,8 +103,7 @@ export type ActiveTool =
 	| "settings"
 	| "ai"
 	| "remove-bg"
-	| "templates"
-	| "move";
+	| "templates";
 
 export const FILL_COLOR = "rgba(0,0,0,1)";
 export const STROKE_COLOR = "rgba(0,0,0,1)";
@@ -210,8 +209,8 @@ export interface Editor {
 	addHeart: () => void;
 	addPlus: () => void;
 	addEllipse: () => void;
-	enableMoveMode: () => void;
-	disableMoveMode: () => void;
+	enablePanning: () => void;
+	disablePanning: () => void;
 	changeFillColor: (value: string) => void;
 	changeStrokeColor: (value: string) => void;
 	changeStrokeWidth: (value: number) => void;

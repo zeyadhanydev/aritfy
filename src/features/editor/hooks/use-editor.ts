@@ -1,6 +1,6 @@
 import { fabric } from "fabric";
 import type { ITextboxOptions } from "fabric/fabric-impl";
-import { useCallback, useMemo, useRef, useState } from "react";
+import React, { useCallback, useMemo, useRef, useState } from "react";
 import { get } from "unsplash-js/dist/methods/users";
 import { useAutoResize } from "@/features/editor/hooks/use-auto-resize";
 import { useCanvasEvents } from "@/features/editor/hooks/use-canvas-events";
@@ -184,6 +184,26 @@ const buildEditor = ({
 		},
 		disableDrawingMode: () => {
 			canvas.isDrawingMode = false;
+		},
+		enablePanning: () => {
+			canvas.defaultCursor = "grab";
+			canvas.hoverCursor = "grab";
+			canvas.moveCursor = "grabbing";
+			canvas.selection = false;
+			canvas.getObjects().forEach((object) => {
+				object.selectable = false;
+			});
+		},
+		disablePanning: () => {
+			canvas.defaultCursor = "default";
+			canvas.hoverCursor = "move";
+			canvas.moveCursor = "move";
+			canvas.selection = true;
+			canvas.getObjects().forEach((object) => {
+				if (object.name !== "clip") {
+					object.selectable = true;
+				}
+			});
 		},
 		onUndo: () => undo(),
 		onRedo: () => redo(),
@@ -642,96 +662,6 @@ const buildEditor = ({
 			});
 			addToCanvas(object);
 		},
-		enableMoveMode: () => {
-			canvas.selection = true;
-			canvas.getObjects().forEach((object) => {
-				if (object.name !== "clip") {
-					object.set({
-						selectable: true,
-						hasControls: false,
-						hasBorders: true,
-						lockScalingX: true,
-						lockScalingY: true,
-						lockRotation: true,
-						cornerSize: 0,
-						transparentCorners: false,
-						borderColor: "#007acc",
-						borderScaleFactor: 2,
-					});
-				}
-			});
-			canvas.renderAll();
-
-			// Add keyboard listeners for precise movement
-			const handleKeyDown = (e: KeyboardEvent) => {
-				const activeObjects = canvas.getActiveObjects();
-				if (activeObjects.length === 0) return;
-
-				const isInput = ["INPUT", "TEXTAREA"].includes(
-					(e.target as HTMLElement).tagName,
-				);
-				if (isInput) return;
-
-				let deltaX = 0;
-				let deltaY = 0;
-				const step = e.shiftKey ? 10 : 1;
-
-				switch (e.key) {
-					case "ArrowLeft":
-						deltaX = -step;
-						break;
-					case "ArrowRight":
-						deltaX = step;
-						break;
-					case "ArrowUp":
-						deltaY = -step;
-						break;
-					case "ArrowDown":
-						deltaY = step;
-						break;
-				}
-
-				if (deltaX !== 0 || deltaY !== 0) {
-					e.preventDefault();
-					activeObjects.forEach((object) => {
-						object.set({
-							left: (object.left || 0) + deltaX,
-							top: (object.top || 0) + deltaY,
-						});
-						object.setCoords();
-					});
-					canvas.renderAll();
-					save();
-				}
-			};
-
-			document.addEventListener("keydown", handleKeyDown);
-			// Store the handler on the canvas object for later removal
-			(canvas as any).moveKeyHandler = handleKeyDown;
-		},
-		disableMoveMode: () => {
-			// Remove keyboard listener
-			const keyHandler = (canvas as any).moveKeyHandler;
-			if (keyHandler) {
-				document.removeEventListener("keydown", keyHandler);
-				(canvas as any).moveKeyHandler = null;
-			}
-
-			canvas.getObjects().forEach((object) => {
-				if (object.name !== "clip") {
-					object.set({
-						hasControls: true,
-						lockScalingX: false,
-						lockScalingY: false,
-						lockRotation: false,
-						cornerSize: 10,
-						borderColor: "#3b82f6",
-						borderScaleFactor: 1.5,
-					});
-				}
-			});
-			canvas.renderAll();
-		},
 		getActiveFillColor: () => {
 			const selectedObject = selectedObjects[0];
 			if (!selectedObject) {
@@ -973,6 +903,71 @@ export const useEditor = ({
 		paste,
 		canvas,
 	});
+
+	// Add canvas panning and zooming event listeners
+	React.useEffect(() => {
+		if (!canvas) return;
+
+		let isPanning = false;
+		let lastPosX = 0;
+		let lastPosY = 0;
+
+		const handleMouseDown = (opt: fabric.IEvent) => {
+			const evt = opt.e as MouseEvent;
+			if (evt.altKey || evt.button === 1) {
+				// Alt key or middle mouse button
+				isPanning = true;
+				canvas.selection = false;
+				lastPosX = evt.clientX;
+				lastPosY = evt.clientY;
+				canvas.defaultCursor = "grabbing";
+			}
+		};
+
+		const handleMouseMove = (opt: fabric.IEvent) => {
+			if (isPanning) {
+				const evt = opt.e as MouseEvent;
+				const vpt = canvas.viewportTransform!;
+				vpt[4] += evt.clientX - lastPosX;
+				vpt[5] += evt.clientY - lastPosY;
+				canvas.requestRenderAll();
+				lastPosX = evt.clientX;
+				lastPosY = evt.clientY;
+			}
+		};
+
+		const handleMouseUp = () => {
+			if (isPanning) {
+				isPanning = false;
+				canvas.selection = true;
+				canvas.defaultCursor = "default";
+			}
+		};
+
+		const handleMouseWheel = (opt: fabric.IEvent) => {
+			const evt = opt.e as WheelEvent;
+			const delta = evt.deltaY;
+			let zoom = canvas.getZoom();
+			zoom *= 0.999 ** delta;
+			if (zoom > 20) zoom = 20;
+			if (zoom < 0.01) zoom = 0.01;
+			canvas.zoomToPoint({ x: evt.offsetX, y: evt.offsetY }, zoom);
+			evt.preventDefault();
+			evt.stopPropagation();
+		};
+
+		canvas.on("mouse:down", handleMouseDown);
+		canvas.on("mouse:move", handleMouseMove);
+		canvas.on("mouse:up", handleMouseUp);
+		canvas.on("mouse:wheel", handleMouseWheel);
+
+		return () => {
+			canvas.off("mouse:down", handleMouseDown);
+			canvas.off("mouse:move", handleMouseMove);
+			canvas.off("mouse:up", handleMouseUp);
+			canvas.off("mouse:wheel", handleMouseWheel);
+		};
+	}, [canvas]);
 	const init = useCallback(
 		({
 			initialCanvas,

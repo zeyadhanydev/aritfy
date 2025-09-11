@@ -18,7 +18,7 @@ import { StrokeColorSidebar } from "@/features/editor/components/stroke-color-si
 import { StrokeWidthSidebar } from "@/features/editor/components/stroke-width-sidebar";
 import { TextSidebar } from "@/features/editor/components/text-sidebar";
 import { Toolbar } from "@/features/editor/components/toolbar";
-import { MoveSidebar } from "@/features/editor/components/move-sidebar";
+
 import { useEditor } from "@/features/editor/hooks/use-editor";
 import {
 	type ActiveTool,
@@ -67,12 +67,7 @@ export const Editor = ({ initialData }: EditorProps) => {
 			if (activeTool === "draw") {
 				editor?.disableDrawingMode();
 			}
-			if (tool === "move") {
-				editor?.enableMoveMode();
-			}
-			if (activeTool === "move") {
-				editor?.disableMoveMode();
-			}
+
 			if (tool === activeTool) return setActiveTool("select");
 
 			setActiveTool(tool);
@@ -110,11 +105,6 @@ export const Editor = ({ initialData }: EditorProps) => {
 					onChangeActiveTool={onChangeActiveTool}
 				/>
 
-				<MoveSidebar
-					editor={editor}
-					activeTool={activeTool}
-					onChangeActiveTool={onChangeActiveTool}
-				/>
 				<ShapeSidebar
 					editor={editor}
 					activeTool={activeTool}
