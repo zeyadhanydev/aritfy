@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Table, TableRow, TableBody, TableCell } from "@/components/ui/table";
 import { useGetProjects } from "@/features/projects/api/use-get-projects";
 import {
@@ -8,6 +9,7 @@ import {
 	FileIcon,
 	Loader,
 	MoreHorizontal,
+	Pencil,
 	Search,
 	Trash,
 } from "lucide-react";
@@ -24,12 +26,17 @@ import { Button } from "@/components/ui/button";
 import { useDuplicateProject } from "@/features/projects/api/use-duplicate-project";
 import { useDeleteProject } from "@/features/projects/api/use-delete-project";
 import { useConfirm } from "@/hooks/use-confirm";
+import { RenameProjectDialog } from "@/features/projects/components/rename-project-dialog";
 
 export const ProjectsSection = () => {
 	const [ConfirmDialog, confirm] = useConfirm(
 		"Are you sure?",
 		"You are about to delete this project",
 	);
+	const [renameProject, setRenameProject] = useState<{
+		id: string;
+		name: string;
+	} | null>(null);
 	const duplicateMutation = useDuplicateProject();
 	const router = useRouter();
 	const onCopy = (id: string) => {
@@ -42,6 +49,10 @@ export const ProjectsSection = () => {
 		if (ok) {
 			removeMutation.mutate({ id });
 		}
+	};
+
+	const onRename = (id: string, name: string) => {
+		setRenameProject({ id, name });
 	};
 
 	const { data, status, fetchNextPage, isFetchingNextPage, hasNextPage } =
@@ -111,6 +122,14 @@ export const ProjectsSection = () => {
 	return (
 		<div className="space-y-6">
 			<ConfirmDialog />
+			{renameProject && (
+				<RenameProjectDialog
+					projectId={renameProject.id}
+					currentName={renameProject.name}
+					isOpen={!!renameProject}
+					onClose={() => setRenameProject(null)}
+				/>
+			)}
 			<div className="flex items-center justify-between">
 				<h3 className="font-semibold text-xl text-gray-900 dark:text-gray-100">
 					Recent Projects
@@ -125,7 +144,7 @@ export const ProjectsSection = () => {
 					<TableBody>
 						{data.pages.map((group, i) => (
 							<Fragment key={i}>
-								{group.data.map((project) => (
+								{group.data.map((project: any) => (
 									<TableRow key={project.id}>
 										<TableCell
 											onClick={() => router.push(`/editor/${project.id}`)}
@@ -155,6 +174,15 @@ export const ProjectsSection = () => {
 													</Button>
 												</DropdownMenuTrigger>
 												<DropdownMenuContent align="end" className="w-60">
+													<DropdownMenuItem
+														className="h-10 cursor-pointer"
+														onClick={() => {
+															onRename(project.id, project.name);
+														}}
+													>
+														<Pencil className="size-4 mr-2" />
+														Rename
+													</DropdownMenuItem>
 													<DropdownMenuItem
 														className="h-10 cursor-pointer"
 														disabled={duplicateMutation.isPending}

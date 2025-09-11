@@ -4,15 +4,16 @@ import {
 	Download,
 	Loader,
 	MousePointerClick,
+	Pencil,
 	Redo2,
 	Undo2,
 } from "lucide-react";
-import React from "react";
+import React, { useState } from "react";
 import { BsCloudCheck, BsCloudSlash } from "react-icons/bs";
 import { CiFileOn } from "react-icons/ci";
 import { useFilePicker } from "use-file-picker";
 import { Hint } from "@/components/hint";
-import { Avatar } from "@/components/ui/avatar";
+
 import { Button } from "@/components/ui/button";
 import {
 	DropdownMenu,
@@ -27,6 +28,8 @@ import type { ActiveTool, Editor } from "@/features/editor/types";
 import { cn } from "@/lib/utils";
 import { useMutationState } from "@tanstack/react-query";
 import { ModeToggle } from "@/components/mode-toggle";
+import { useGetProject } from "@/features/projects/api/use-get-project";
+import { RenameProjectDialog } from "@/features/projects/components/rename-project-dialog";
 
 interface NavbarProps {
 	editor: Editor | undefined;
@@ -41,6 +44,8 @@ export const Navbar = ({
 	editor,
 	id,
 }: NavbarProps) => {
+	const [isRenaming, setIsRenaming] = useState(false);
+	const { data: project } = useGetProject(id);
 	const data = useMutationState({
 		filters: {
 			mutationKey: ["project", { id }],
@@ -55,7 +60,7 @@ export const Navbar = ({
 
 	const { openFilePicker } = useFilePicker({
 		accept: ".json",
-		onFilesSuccessfullySelected: ({ plainFiles }: any) => {
+		onFilesSuccessfullySelected: ({ plainFiles }: { plainFiles: File[] }) => {
 			if (plainFiles && plainFiles.length > 0) {
 				const file = plainFiles[0];
 				const reader = new FileReader();
@@ -70,6 +75,37 @@ export const Navbar = ({
 		<div className="w-full flex items-center p-4 h-[68px] gap-x-8 border-b bg-background lg:pl-[34px]">
 			<Logo />
 			<div className="w-full flex items-center gap-x-1 h-full">
+				{project && (
+					<>
+						<DropdownMenu modal={false}>
+							<DropdownMenuTrigger asChild>
+								<Button
+									size="sm"
+									variant="ghost"
+									className="gap-x-2 max-w-[200px]"
+								>
+									<span className="truncate">{project.name}</span>
+									<ChevronDown className="size-4" />
+								</Button>
+							</DropdownMenuTrigger>
+							<DropdownMenuContent align="start" className="min-w-48">
+								<DropdownMenuItem
+									onClick={() => setIsRenaming(true)}
+									className="flex items-center gap-x-2"
+								>
+									<Pencil className="size-4" />
+									<div>
+										<p>Rename Project</p>
+										<p className="text-xs text-muted-foreground">
+											Change the project name
+										</p>
+									</div>
+								</DropdownMenuItem>
+							</DropdownMenuContent>
+						</DropdownMenu>
+						<Separator orientation="vertical" className="mx-2" />
+					</>
+				)}
 				<DropdownMenu modal={false}>
 					<DropdownMenuTrigger asChild>
 						<Button size="sm" variant={"ghost"}>
@@ -222,6 +258,14 @@ export const Navbar = ({
 						<UserButton />
 					</div>
 				</div>
+				{project && (
+					<RenameProjectDialog
+						projectId={project.id}
+						currentName={project.name}
+						isOpen={isRenaming}
+						onClose={() => setIsRenaming(false)}
+					/>
+				)}
 			</div>
 		</div>
 	);
