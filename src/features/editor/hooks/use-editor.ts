@@ -642,6 +642,96 @@ const buildEditor = ({
 			});
 			addToCanvas(object);
 		},
+		enableMoveMode: () => {
+			canvas.selection = true;
+			canvas.getObjects().forEach((object) => {
+				if (object.name !== "clip") {
+					object.set({
+						selectable: true,
+						hasControls: false,
+						hasBorders: true,
+						lockScalingX: true,
+						lockScalingY: true,
+						lockRotation: true,
+						cornerSize: 0,
+						transparentCorners: false,
+						borderColor: "#007acc",
+						borderScaleFactor: 2,
+					});
+				}
+			});
+			canvas.renderAll();
+
+			// Add keyboard listeners for precise movement
+			const handleKeyDown = (e: KeyboardEvent) => {
+				const activeObjects = canvas.getActiveObjects();
+				if (activeObjects.length === 0) return;
+
+				const isInput = ["INPUT", "TEXTAREA"].includes(
+					(e.target as HTMLElement).tagName,
+				);
+				if (isInput) return;
+
+				let deltaX = 0;
+				let deltaY = 0;
+				const step = e.shiftKey ? 10 : 1;
+
+				switch (e.key) {
+					case "ArrowLeft":
+						deltaX = -step;
+						break;
+					case "ArrowRight":
+						deltaX = step;
+						break;
+					case "ArrowUp":
+						deltaY = -step;
+						break;
+					case "ArrowDown":
+						deltaY = step;
+						break;
+				}
+
+				if (deltaX !== 0 || deltaY !== 0) {
+					e.preventDefault();
+					activeObjects.forEach((object) => {
+						object.set({
+							left: (object.left || 0) + deltaX,
+							top: (object.top || 0) + deltaY,
+						});
+						object.setCoords();
+					});
+					canvas.renderAll();
+					save();
+				}
+			};
+
+			document.addEventListener("keydown", handleKeyDown);
+			// Store the handler on the canvas object for later removal
+			(canvas as any).moveKeyHandler = handleKeyDown;
+		},
+		disableMoveMode: () => {
+			// Remove keyboard listener
+			const keyHandler = (canvas as any).moveKeyHandler;
+			if (keyHandler) {
+				document.removeEventListener("keydown", keyHandler);
+				(canvas as any).moveKeyHandler = null;
+			}
+
+			canvas.getObjects().forEach((object) => {
+				if (object.name !== "clip") {
+					object.set({
+						hasControls: true,
+						lockScalingX: false,
+						lockScalingY: false,
+						lockRotation: false,
+						cornerSize: 10,
+						borderColor: "#3b82f6",
+						borderScaleFactor: 1.5,
+					});
+				}
+			});
+			canvas.renderAll();
+		},
 		getActiveFillColor: () => {
 			const selectedObject = selectedObjects[0];
 			if (!selectedObject) {

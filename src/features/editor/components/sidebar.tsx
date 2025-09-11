@@ -2,6 +2,7 @@
 import {
 	Image,
 	LayoutTemplate,
+	Move,
 	Pencil,
 	Settings,
 	Shapes,
@@ -26,6 +27,12 @@ export const Sidebar = ({ activeTool, onChangeActiveTool }: SidebarProps) => {
 					label="Design"
 					isActive={activeTool === "templates"}
 					onClick={() => onChangeActiveTool("templates")}
+				/>
+				<SidebarItem
+					icon={Move}
+					label="Move"
+					isActive={activeTool === "move"}
+					onClick={() => onChangeActiveTool("move")}
 				/>
 				<SidebarItem
 					icon={Image}
