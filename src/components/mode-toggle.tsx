@@ -5,10 +5,17 @@ import { useTheme } from "next-themes";
 import { motion, AnimatePresence } from "framer-motion";
 
 import { Button } from "@/components/ui/button";
+import { useEffect, useState } from "react";
 
 export function ModeToggle() {
 	const { setTheme, theme } = useTheme();
-
+	const [mouted, setIsMounted] = useState(false);
+	useEffect(() => {
+		setIsMounted(true);
+	}, []);
+	if (!mouted) {
+		return null;
+	}
 	const toggleTheme = () => {
 		if (theme === "dark") {
 			setTheme("light");

@@ -1,4 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 import type { InferRequestType, InferResponseType } from "hono";
 
@@ -17,7 +18,18 @@ export const useGenerateImage = () => {
 			const response = await client.api.ai["generate-image"].$post({
 				json,
 			});
+
+			if (!response.ok) {
+				throw new Error("Failed to generate image");
+			}
+
 			return await response.json();
+		},
+		onSuccess: () => {
+			toast.success("Image generated successfully!");
+		},
+		onError: (error) => {
+			toast.error(error.message || "Failed to generate image");
 		},
 	});
 	return mutation;

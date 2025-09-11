@@ -1,4 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 import type { InferRequestType, InferResponseType } from "hono";
 
@@ -17,7 +18,18 @@ export const useRemoveBgImage = () => {
 			const response = await client.api.ai["remove-bg"].$post({
 				json,
 			});
+
+			if (!response.ok) {
+				throw new Error("Failed to remove background");
+			}
+
 			return await response.json();
+		},
+		onSuccess: () => {
+			toast.success("Background removed successfully!");
+		},
+		onError: (error) => {
+			toast.error(error.message || "Failed to remove background");
 		},
 	});
 	return mutation;

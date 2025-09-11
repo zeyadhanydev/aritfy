@@ -36,9 +36,12 @@ export const UserButton = () => {
 	const imageUrl = session.data.user.image!;
 	return (
 		<div className="relative overflow-hidden rounded-full size-11 flex items-center justify-center">
-			{subscription?.active && !isLoading && (
-				<div className="absolute size-12 bg-gradient-conic from-yellow-400 via-yellow-500 to-yellow-600 animate-spin z-0" />
-			)}
+			{isLoading ? (
+				<div className="absolute inset-0 bg-gradient-to-r from-gray-300 via-gray-400 to-gray-300 animate-pulse rounded-full z-0" />
+			) : subscription?.active ? (
+				<div className="absolute inset-0 bg-gradient-conic from-yellow-400 via-yellow-500 to-yellow-600 animate-spin rounded-full z-0" />
+			) : null}
+
 			<DropdownMenu modal={false}>
 				<DropdownMenuTrigger>
 					<Avatar className="size-10 transition z-1">

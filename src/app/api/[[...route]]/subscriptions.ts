@@ -169,16 +169,16 @@ const app = new Hono()
       }
 
       if (event.type === "invoice.payment_succeeded") {
-        const invoice = event.data as Stripe.InvoicePaymentSucceededEvent.Data;
+        const invoice = event.data.object as Stripe.Invoice;
 
         // Skip if no subscription (e.g., one-time payments)
-        if (!invoice.object.id) {
+        if (!invoice.subscription) {
           console.log("Invoice has no subscription, skipping");
           return c.json(null, 200);
         }
 
         const subscription = await stripe.subscriptions.retrieve(
-          invoice.object.id as string,
+          invoice.subscription as string,
         );
 
         console.log(`Updating subscription after payment success: ${subscription.id}`);
@@ -281,13 +281,13 @@ const app = new Hono()
         const invoice = event.data.object as Stripe.Invoice;
 
         // Skip if no subscription
-        if (!invoice.id) {
+        if (!invoice.subscription) {
           console.log("Invoice has no subscription, skipping payment failure update");
           return c.json(null, 200);
         }
 
         const subscription = await stripe.subscriptions.retrieve(
-          invoice.id as string,
+          invoice.subscription as string,
         );
 
         console.log(`Updating subscription after payment failure: ${subscription.id} to ${subscription.status}`);
