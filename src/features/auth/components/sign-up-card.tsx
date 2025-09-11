@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import { useSignUp } from "../hooks/use-sign-up";
+import { useSignUp } from "@/features/auth/hooks/use-sign-up";
 
 export const SignUpCard = () => {
 	const mutation = useSignUp();

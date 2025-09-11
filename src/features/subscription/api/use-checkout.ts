@@ -1,7 +1,7 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-
-import type { InferResponseType } from "hono";
 import { toast } from "sonner";
+import { useMutation } from "@tanstack/react-query";
+import { InferResponseType } from "hono";
+
 import { client } from "@/lib/hono";
 
 type ResponseType = InferResponseType<
@@ -10,12 +10,14 @@ type ResponseType = InferResponseType<
 >;
 
 export const useCheckout = () => {
-	const mutation = useMutation({
+	const mutation = useMutation<ResponseType, Error>({
 		mutationFn: async () => {
 			const response = await client.api.subscriptions.checkout.$post();
+
 			if (!response.ok) {
-				throw new Error("Failed to create a session");
+				throw new Error("Failed to create session");
 			}
+
 			return await response.json();
 		},
 		onSuccess: ({ data }) => {
@@ -25,5 +27,6 @@ export const useCheckout = () => {
 			toast.error("Failed to create session");
 		},
 	});
+
 	return mutation;
 };

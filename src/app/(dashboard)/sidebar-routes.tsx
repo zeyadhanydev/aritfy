@@ -7,7 +7,7 @@ import { Separator } from "@/components/ui/separator";
 import { SidebarItem } from "./sidebar-item";
 import { usePaywall } from "@/features/subscription/hooks/use-paywall";
 import { useCheckout } from "@/features/subscription/api/use-checkout";
-import { useBilling } from "@/features/subscription/subscriptions/api/use-billing";
+import { useBilling } from "@/features/subscription/api/use-billing";
 
 export const SidebarRoutes = () => {
 	const pathname = usePathname();

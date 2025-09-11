@@ -33,7 +33,7 @@ export function ModeToggle() {
 						exit={{ scale: 0, rotate: -90 }}
 						transition={{ duration: 0.3, ease: "easeInOut" }}
 					>
-						<Moon className="h-[1.2rem] w-[1.2rem]" />
+						<Moon className="h-[1.5rem] w-[1.5rem]" />
 					</motion.div>
 				) : (
 					<motion.div

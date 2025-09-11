@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { usePaywall } from "@/features/subscription/hooks/use-paywall";
 import { useBilling } from "@/features/subscription/api/use-billing";
-import { useGetSubscription } from "@/features/subscription/subscriptions/api/use-get-subscription";
+import { useGetSubscription } from "@/features/subscription/api/use-get-subscription";
 export const UserButton = () => {
 	const paywall = usePaywall();
 	const mutation = useBilling();
