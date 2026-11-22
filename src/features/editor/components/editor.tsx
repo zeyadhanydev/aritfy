@@ -1,7 +1,8 @@
 "use client";
 
 import { fabric } from "fabric";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AiSidebar } from "@/features/editor/components/ai-sidebar";
 import { FillColorSidebar } from "@/features/editor/components/fill-color-sidebar";
 import { FilterSidebar } from "@/features/editor/components/filter-sidebar";
@@ -36,14 +37,14 @@ interface EditorProps {
 export const Editor = ({ initialData }: EditorProps) => {
 	const { mutate } = useUpdateProject(initialData.id);
 
-	const debouncedSave = useCallback(
+	const debouncedSave = useMemo(() =>
 		debounce((values: { json: string; height: number; width: number }) => {
-			// TODO: add debouce
-			console.log("savvingg");
 			mutate(values);
 		}, 500),
 		[mutate],
 	);
+
+	useEffect(() => () => { debouncedSave.flush(); }, [debouncedSave]);
 
 	const [activeTool, setActiveTool] = useState<ActiveTool>("select");
 	const onClearSelection = useCallback(() => {
@@ -51,7 +52,7 @@ export const Editor = ({ initialData }: EditorProps) => {
 			setActiveTool("select");
 		}
 	}, [activeTool]);
-	const { init, editor } = useEditor({
+	const { init, editor, loadError } = useEditor({
 		defaultState: initialData.json,
 		defaultWidth: initialData.width,
 		defaultHeight: initialData.height,
@@ -91,8 +92,9 @@ export const Editor = ({ initialData }: EditorProps) => {
 			canvas.dispose();
 		};
 	}, [init]);
-	return (
-		<div className="h-full flex flex-col">
+    if (loadError) return <div role="alert" className="h-full flex flex-col items-center justify-center gap-4 p-8 text-center"><h1 className="font-semibold">Design could not be opened</h1><p>{loadError}</p><Link href="/" className="underline">Back to dashboard</Link></div>;
+    return (
+        <div className="h-full flex flex-col">
 			<Navbar
 				activeTool={activeTool}
 				onChangeActiveTool={onChangeActiveTool}

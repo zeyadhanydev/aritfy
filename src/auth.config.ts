@@ -14,11 +14,6 @@ const CredentialsSchema = z.object({
 	password: z.string(),
 });
 
-declare module "next-auth/jwt" {
-	interface JWT {
-		id?: string | undefined;
-	}
-}
 declare module "@auth/core/jwt" {
 	interface JWT {
 		id?: string | undefined;
@@ -33,7 +28,6 @@ export default {
 				password: { label: "Password", type: "password" },
 			},
 			async authorize(credentials) {
-				console.log({ credentials });
 				const validatedFields = CredentialsSchema.safeParse(credentials);
 				if (!validatedFields.success) {
 					return null;

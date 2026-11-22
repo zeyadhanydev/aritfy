@@ -6,7 +6,7 @@ import type { ActiveTool, Editor } from "../types";
 interface ToolbarProps {
 	editor: Editor | undefined;
 	activeTool: ActiveTool;
-	onChangeActiveTool: (tool: string) => void;
+	onChangeActiveTool: (tool: ActiveTool) => void;
 }
 
 const ClientToolbar = dynamic(

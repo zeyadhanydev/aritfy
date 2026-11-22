@@ -2,12 +2,6 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
 	/* config options here */
-	eslint: {
-		ignoreDuringBuilds: true,
-	},
-	typescript: {
-		ignoreBuildErrors: true,
-	},
 	images: {
 		remotePatterns: [
 			{
@@ -31,8 +25,10 @@ const nextConfig: NextConfig = {
 			},
 		],
 	},
+	typedRoutes: true,
 	experimental: {
-		typedRoutes: true,
+		cpus: 1,
+		webpackMemoryOptimizations: true,
 	},
 };
 

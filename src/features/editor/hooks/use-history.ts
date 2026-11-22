@@ -1,93 +1,80 @@
-import { use, useCallback, useRef, useState } from "react";
-
+import type { fabric } from "fabric";
+import { useCallback, useRef, useState } from "react";
 import { JSON_KEYS } from "../types";
 
 type UseHistoryProps = {
 	canvas: fabric.Canvas | null;
-	saveCallback: (values: {
-		json: string;
-		width: number;
-		height: number;
-	}) => void;
+	saveCallback?: (values: { json: string; width: number; height: number }) => void;
 };
 
 export const useHistory = ({ canvas, saveCallback }: UseHistoryProps) => {
-	const [historyIndex, setHistoryIndex] = useState(0);
-
+	const [historyIndex, setHistoryIndexState] = useState(0);
+	const indexRef = useRef(0);
 	const canvasHistory = useRef<string[]>([]);
-	// not save when undo and redo
-	// prevent canvas events from saving the state again
-	// because undo and redo will change the canvas state
-	// then there is unwanted save
 	const skipSave = useRef(false);
 
-	const canUndo = useCallback(() => {
-		// if the current history index is greater than 0 we can undo
-		return historyIndex > 0;
-	}, [historyIndex]);
-	const canRedo = useCallback(() => {
-		// if the current history index is less than the length
-		// of the history array minus 1 we can redo
-		// because the index is 0 based and length is 1 based
-		// --- if the current index is 1 then 1 - 1 = 0 the condition is not valid
-		return historyIndex < canvasHistory.current.length - 1;
-	}, [historyIndex]);
+	const setHistoryIndex = useCallback((value: React.SetStateAction<number>) => {
+		const next = typeof value === "function" ? value(indexRef.current) : value;
+		indexRef.current = next;
+		setHistoryIndexState(next);
+	}, []);
 
-	// Placeholder for history management logic
+	const canUndo = useCallback(() => historyIndex > 0, [historyIndex]);
+	const canRedo = useCallback(
+		() => historyIndex < canvasHistory.current.length - 1,
+		[historyIndex],
+	);
+
+	const persist = useCallback(() => {
+		if (!canvas) return;
+		const workspace = canvas.clipPath;
+		const width = workspace?.width;
+		const height = workspace?.height;
+		if (!width || !height) return;
+		saveCallback?.({
+			json: JSON.stringify(canvas.toJSON(JSON_KEYS)),
+			width,
+			height,
+		});
+	}, [canvas, saveCallback]);
+
 	const save = useCallback(
-		// skip when we want directly save without adding to history
-		// like when we load a new image or clear the canvas
 		(skip = false) => {
-			if (!canvas) return;
-			const currentState = canvas.toJSON(JSON_KEYS);
-			const json = JSON.stringify(currentState);
-
-			if (!skip && !skipSave.current) {
+			// Fabric emits object events while loading a saved state. Do not
+			// record or persist those incomplete intermediate canvases.
+			if (!canvas || skipSave.current) return;
+			const json = JSON.stringify(canvas.toJSON(JSON_KEYS));
+			if (!skip && canvasHistory.current[indexRef.current] !== json) {
+				canvasHistory.current = canvasHistory.current.slice(0, indexRef.current + 1);
 				canvasHistory.current.push(json);
 				setHistoryIndex(canvasHistory.current.length - 1);
 			}
-			const workspace = canvas.clipPath;
-			console.log("workspace", workspace);
-			// TODO: Save Callback
-			saveCallback?.({
-				height: workspace?.height,
-				width: workspace?.width,
-				json: json,
-			});
+			persist();
 		},
-		[canvas, saveCallback],
+		[canvas, persist, setHistoryIndex],
 	);
-	const undo = useCallback(() => {
-		if (canUndo()) {
+
+	const restore = useCallback(
+		(nextIndex: number) => {
+			if (!canvas || skipSave.current || nextIndex < 0 || nextIndex >= canvasHistory.current.length) return;
+			const state = JSON.parse(canvasHistory.current[nextIndex]);
 			skipSave.current = true;
-			canvas?.clear().renderAll();
-
-			const previousIndex = historyIndex - 1;
-			const previousState = JSON.parse(canvasHistory.current[previousIndex]);
-			console.log(previousState);
-			canvas?.loadFromJSON(previousState, () => {
-				canvas?.renderAll();
-				setHistoryIndex(previousIndex);
+			try {
+				canvas.loadFromJSON(state, () => {
+					canvas.renderAll();
+					setHistoryIndex(nextIndex);
+					skipSave.current = false;
+					persist();
+				});
+			} catch (error) {
 				skipSave.current = false;
-			});
-		}
-	}, [canUndo, canvas, historyIndex]);
+				throw error;
+			}
+		},
+		[canvas, persist, setHistoryIndex],
+	);
+	const undo = useCallback(() => restore(indexRef.current - 1), [restore]);
+	const redo = useCallback(() => restore(indexRef.current + 1), [restore]);
 
-	const redo = useCallback(() => {
-		if (canRedo()) {
-			skipSave.current = true;
-			canvas?.clear().renderAll();
-
-			const nextIndex = historyIndex + 1;
-			const nextState = JSON.parse(canvasHistory.current[nextIndex]);
-
-			console.log(nextState);
-			canvas?.loadFromJSON(nextState, () => {
-				canvas?.renderAll();
-				setHistoryIndex(nextIndex);
-				skipSave.current = false;
-			});
-		}
-	}, [canRedo, canvas, historyIndex]);
-	return { save, redo, undo, canRedo, canUndo, setHistoryIndex, canvasHistory };
+	return { save, redo, undo, canRedo, canUndo, setHistoryIndex, canvasHistory, skipSave };
 };

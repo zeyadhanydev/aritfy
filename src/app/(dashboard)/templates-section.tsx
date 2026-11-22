@@ -36,10 +36,10 @@ export const TemplatesSection = () => {
 			</div>
 		);
 	}
-	if (!data.length) {
+	if (!data?.length) {
 		return null;
 	}
-	const onClick = (template: any) => {
+	const onClick = (template: NonNullable<typeof data>[number]) => {
 		// TODO: check if the tempalate is pro
 		if (template.isPro && paywall.shouldBlock) {
 			paywall.triggerPaywall();
@@ -81,7 +81,6 @@ export const TemplatesSection = () => {
 						title={template.name}
 						disabled={mutation.isPending}
 						description={
-							template.description ||
 							`Professional ${template.name.toLowerCase()} template`
 						}
 					/>

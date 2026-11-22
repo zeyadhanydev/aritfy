@@ -10,11 +10,9 @@ import { ToolSidebarHeader } from "@/features/editor/components/tool-sidebar-hea
 import {
 	type ActiveTool,
 	type Editor,
-	FILL_COLOR,
 } from "@/features/editor/types";
 import { cn } from "@/lib/utils";
 import { ToolSidebarClose } from "./tool-sidebar-close";
-import { Loader } from "lucide-react";
 
 interface SettingsSidebarProps {
 	activeTool: ActiveTool;
@@ -51,7 +49,7 @@ export const SettingsSidebar = ({
 			setHeight(initialHeight);
 			setBackground(initialBackground);
 		}
-	}, [initialWidth, initialHeight, initialBackground]);
+	}, [workspace, initialWidth, initialHeight, initialBackground]);
 	const changeWidth = (value: string) => setWidth(value);
 	const changeHeight = (value: string) => setHeight(value);
 	const changeBackground = (value: string) => {

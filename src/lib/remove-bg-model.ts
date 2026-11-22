@@ -1,4 +1,4 @@
-import type { Pipeline } from "@huggingface/transformers";
+import type { ImageSegmentationPipeline } from "@huggingface/transformers";
 
 /**
  * Interface for the remove background result
@@ -8,7 +8,7 @@ interface RemoveBackgroundResult {
 	error?: string; // Error message if processing failed
 }
 
-let pipe: Pipeline | null = null;
+let pipe: ImageSegmentationPipeline | null = null;
 
 /**
  * Initializes the background removal model
@@ -31,9 +31,8 @@ export async function initRemoveBackgroundModel(): Promise<void> {
 		const { pipeline } = await import("@huggingface/transformers");
 
 		// Initialize the pipeline with RMBG-1.4 model
-		pipe = await pipeline("image-segmentation", "briaai/RMBG-1.4", {
-			trust_remote_code: true,
-		});
+		const createSegmentationPipeline = pipeline as (task: "image-segmentation", model: string) => Promise<ImageSegmentationPipeline>;
+		pipe = await createSegmentationPipeline("image-segmentation", "briaai/RMBG-1.4");
 
 		console.log("Background removal model initialized successfully");
 	} catch (error) {
@@ -117,7 +116,7 @@ export async function removeBackground(
 
 		// Normalize mask values
 		for (let i = 0; i < maskArray.length; i++) {
-			maskArray[i] = (maskArray[i] - min) / (max - min);
+			maskArray[i] = (max === min ? (max > 0 ? 1 : 0) : (maskArray[i] - min) / (max - min));
 		}
 
 		// Apply mask to image alpha channel

@@ -10,17 +10,13 @@ export function downloadFile(file: string, type: string) {
 	anchorElement.click();
 	anchorElement.remove();
 }
-export function transformText(objects: any) {
-	if (!objects) return;
-	objects.forEach((item: any) => {
-		if (item.objects) {
-			transformText(item.objects);
-		} else {
-			if (item.type === "text") {
-				item.type = "textbox";
-			}
-		}
-	});
+export function transformText(objects: unknown) {
+ if (!Array.isArray(objects)) return;
+ for (const item of objects) {
+  if (typeof item !== "object" || item === null) continue;
+  if ("objects" in item) transformText(item.objects);
+  else if ("type" in item && item.type === "text") item.type = "textbox";
+ }
 }
 
 export function isTextType(type: string | undefined) {

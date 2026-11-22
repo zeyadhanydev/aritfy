@@ -2,7 +2,6 @@
 
 import { cn } from "@/lib/utils";
 import { Crown, Zap } from "lucide-react";
-import Image from "next/image";
 
 interface TemplateCardProps {
 	imgSrc: string;

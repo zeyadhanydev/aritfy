@@ -1,13 +1,10 @@
 "use client";
 
 import { AlertTriangle, Loader } from "lucide-react";
-import Image from "next/image";
-import Link from "next/link";
 import { useCallback } from "react";
-import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ToolSidebarHeader } from "@/features/editor/components/tool-sidebar-header";
-import { type ActiveTool, type Editor, fonts } from "@/features/editor/types";
+import { type ActiveTool, type Editor } from "@/features/editor/types";
 import { useGetImages } from "@/features/images/api/use-get-images";
 import { UploadButton } from "@/lib/uploadthing";
 import { cn } from "@/lib/utils";
@@ -83,13 +80,14 @@ export const ImageSidebar = ({
 									alt={image.alt_description || ""}
 									className="object-cover"
 								/>
-								<Link
+								<a
 									href={image.links.html}
 									target="_blank"
+                                    rel="noopener noreferrer"
 									className="opacity-0 group-hover:opacity-100 absolute left-0 bottom-0 w-full text-[10px] truncate text-white hover:underline p-1 bg-black/50 text-left"
 								>
 									{image.user.name}
-								</Link>
+								</a>
 							</button>
 						);
 					})}

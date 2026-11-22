@@ -1,53 +1,21 @@
-import { useState } from "react";
+import { useState, type ReactElement } from "react";
 import { Button } from "@/components/ui/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
-export const useConfirm = (
-	title: string,
-	message: string,
-): [() => JSX.Element, () => Promise<unknown>] => {
-	const [promise, setPromise] = useState<{
-		resolve: (value: boolean) => void;
-	} | null>(null);
-	const confirm = () =>
-		new Promise((resolve, reject) => {
-			setPromise({ resolve });
-		});
-	const handleClose = () => {
-		setPromise(null);
-	};
-	const handleConfirm = () => {
-		promise?.resolve(true);
-		handleClose();
-	};
-	const handleCancel = () => {
-		promise.resolve(false);
-		handleClose();
-	};
-	const ConfirmationDialog = () => (
-		<Dialog open={promise !== null}>
-			<DialogContent>
-				<DialogContent>
-					<DialogHeader>
-						<DialogTitle>{title}</DialogTitle>
-						<DialogDescription>{message}</DialogDescription>
-					</DialogHeader>
-					<DialogFooter className="pt-2">
-						<Button onClick={handleCancel} variant="outline">
-							Cancel
-						</Button>
-						<Button onClick={handleConfirm}>Confirm</Button>
-					</DialogFooter>
-				</DialogContent>
-			</DialogContent>
-		</Dialog>
-	);
-	return [ConfirmationDialog, confirm];
+export const useConfirm = (title: string, message: string): [() => ReactElement, () => Promise<boolean>] => {
+ const [pending, setPending] = useState<{ resolve: (value: boolean) => void } | null>(null);
+ const confirm = () => new Promise<boolean>(resolve => setPending({ resolve }));
+ const finish = (answer: boolean) => { pending?.resolve(answer); setPending(null); };
+ const ConfirmationDialog = () => (
+  <Dialog open={pending !== null} onOpenChange={open => { if (!open) finish(false); }}>
+   <DialogContent>
+    <DialogHeader><DialogTitle>{title}</DialogTitle><DialogDescription>{message}</DialogDescription></DialogHeader>
+    <DialogFooter className="pt-2">
+     <Button onClick={() => finish(false)} variant="outline">Cancel</Button>
+     <Button onClick={() => finish(true)}>Confirm</Button>
+    </DialogFooter>
+   </DialogContent>
+  </Dialog>
+ );
+ return [ConfirmationDialog, confirm];
 };

@@ -35,14 +35,14 @@ export const TemplateSidebar = ({
 	});
 	const paywall = usePaywall();
 
-	const onClick = async (template: any) => {
+	const onClick = async (template: { isPro: boolean | null; json: string }) => {
 		const ok = await confirm();
 		if (paywall.shouldBlock && template.isPro) {
 			paywall.triggerPaywall();
 			return;
 		}
 		if (ok) {
-			editor.loadJson(template.json);
+			editor?.loadJson(template.json);
 		}
 	};
 	return (

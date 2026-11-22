@@ -144,7 +144,7 @@ export const ProjectsSection = () => {
 					<TableBody>
 						{data.pages.map((group, i) => (
 							<Fragment key={i}>
-								{group.data.map((project: any) => (
+								{group.data.map((project) => (
 									<TableRow key={project.id}>
 										<TableCell
 											onClick={() => router.push(`/editor/${project.id}`)}

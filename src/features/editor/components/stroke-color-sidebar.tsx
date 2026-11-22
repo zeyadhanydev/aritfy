@@ -6,7 +6,6 @@ import { ToolSidebarHeader } from "@/features/editor/components/tool-sidebar-hea
 import {
 	type ActiveTool,
 	type Editor,
-	FILL_COLOR,
 	STROKE_COLOR,
 } from "@/features/editor/types";
 import { cn } from "@/lib/utils";

@@ -14,22 +14,22 @@ export const runtime = 'nodejs'; // OR "edge"
 function getAuthConfig(c: Context): AuthConfig {
 return {
   secret: c.env?.AUTH_SECRET || process.env.AUTH_SECRET,
-  ...authConfig as any
+  ...authConfig
 }
 }
 const app = new Hono().basePath('/api');
 app.use('*', initAuthConfig(getAuthConfig));
 
-app.route('/images', images).
+const routes = app.route('/images', images).
   route('/ai', ai).
   route('/subscriptions', subscriptions).
   route('/projects', projects).
   route('/users' , users)
 
-export const GET = handle(app)
-export const POST = handle(app)
-export const PUT = handle(app)
-export const DELETE = handle(app)
-export const PATCH = handle(app)
+export const GET = handle(routes)
+export const POST = handle(routes)
+export const PUT = handle(routes)
+export const DELETE = handle(routes)
+export const PATCH = handle(routes)
 
-export type AppType = typeof app;
+export type AppType = typeof routes;

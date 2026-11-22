@@ -1,5 +1,6 @@
 "use client";
 
+import { toast } from "sonner";
 import { CreditCard, Crown, Home, MessageCircleQuestion } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -11,7 +12,7 @@ import { useBilling } from "@/features/subscription/api/use-billing";
 
 export const SidebarRoutes = () => {
 	const pathname = usePathname();
-	const { shouldBlock, isLoading, triggerPaywall } = usePaywall();
+	const { shouldBlock, isLoading, triggerPaywall, isDemoPremium } = usePaywall();
 	const billingMutation = useBilling();
 	const mutation = useCheckout();
 	const onClick = () => {
@@ -55,12 +56,12 @@ export const SidebarRoutes = () => {
 			<ul className="flex flex-col gap-y-1 px-3">
 				<SidebarItem
 					onClick={() => onClick()}
-					href={pathname}
 					icon={CreditCard}
-					label="Billing"
+					label={isDemoPremium ? "Demo Premium (no billing)" : "Billing"}
+                    disabled={isDemoPremium}
 				/>
 				<SidebarItem
-					href={"mailto:me@me.com"}
+					onClick={() => toast.info("The support contact has not been configured yet.")}
 					icon={MessageCircleQuestion}
 					label="Get Help"
 				/>

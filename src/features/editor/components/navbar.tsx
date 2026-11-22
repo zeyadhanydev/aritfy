@@ -1,4 +1,5 @@
 "use client";
+import { toast } from "sonner";
 import {
 	ChevronDown,
 	Download,
@@ -66,7 +67,7 @@ export const Navbar = ({
 				const reader = new FileReader();
 				reader.readAsText(file, "UTF-8");
 				reader.onload = () => {
-					editor?.loadJson(reader.result as string);
+					try { editor?.loadJson(reader.result as string); } catch { toast.error("This JSON file could not be opened."); }
 				};
 			}
 		},

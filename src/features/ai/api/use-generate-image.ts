@@ -6,11 +6,11 @@ import type { InferRequestType, InferResponseType } from "hono";
 import { client } from "@/lib/hono";
 
 type ResponseType = InferResponseType<
-	(typeof client.api.ai)["generate-image"]["$post"]
+	(typeof client.api.ai)["generate-image"]["$post"], 200
 >;
 type RequestType = InferRequestType<
 	(typeof client.api.ai)["generate-image"]["$post"]
->;
+>["json"];
 
 export const useGenerateImage = () => {
 	const mutation = useMutation<ResponseType, Error, RequestType>({
@@ -23,7 +23,9 @@ export const useGenerateImage = () => {
 				throw new Error("Failed to generate image");
 			}
 
-			return await response.json();
+			const payload = await response.json();
+			if (!("data" in payload)) throw new Error("The provider did not return an image");
+			return payload;
 		},
 		onSuccess: () => {
 			toast.success("Image generated successfully!");

@@ -1,7 +1,6 @@
 import { fabric } from "fabric";
 import type { ITextboxOptions } from "fabric/fabric-impl";
 import React, { useCallback, useMemo, useRef, useState } from "react";
-import { get } from "unsplash-js/dist/methods/users";
 import { useAutoResize } from "@/features/editor/hooks/use-auto-resize";
 import { useCanvasEvents } from "@/features/editor/hooks/use-canvas-events";
 import {
@@ -32,10 +31,10 @@ import { useClipboard } from "./use-clipboard";
 import { useHistory } from "./use-history";
 import { useHotkeys } from "./use-hotkeys";
 import { useWindowEvents } from "./use-window-events";
-import { useRemoveBgImage } from "@/features/ai/api/use-remove-bg";
 import { useLoadState } from "./use-load-state";
+import { exportRaster, exportSvg } from "../export";
 
-const buildEditor = ({
+export const buildEditor = ({
 	canvas,
 	fillColor,
 	setFillColor,
@@ -57,42 +56,11 @@ const buildEditor = ({
 
 	redo,
 	canUndo,
+	skipSave,
 }: buildEditorProps): Editor => {
-	const generateSaveOptions = () => {
-		const { width, height, left, top } = getWorkspace() as fabric.Rect;
-		return {
-			name: "Image",
-			format: "png",
-			quality: 1,
-			width,
-			height,
-			left,
-			top,
-		};
-	};
-	const savePng = () => {
-		const options = generateSaveOptions();
-		canvas.setViewportTransform([1, 0, 0, 1, 0, 0]);
-		const dataUrl = canvas.toDataURL(options);
-		downloadFile(dataUrl, "png");
-		autoZoom();
-	};
-
-	const saveSvg = () => {
-		const options = generateSaveOptions();
-		canvas.setViewportTransform([1, 0, 0, 1, 0, 0]);
-		const dataUrl = canvas.toDataURL(options);
-		downloadFile(dataUrl, "svg");
-		autoZoom();
-	};
-
-	const saveJpg = () => {
-		const options = generateSaveOptions();
-		canvas.setViewportTransform([1, 0, 0, 1, 0, 0]);
-		const dataUrl = canvas.toDataURL(options);
-		downloadFile(dataUrl, "jpg");
-		autoZoom();
-	};
+	const savePng = () => downloadFile(exportRaster(canvas, "png"), "png");
+	const saveSvg = () => downloadFile(exportSvg(canvas), "svg");
+	const saveJpg = () => downloadFile(exportRaster(canvas, "jpeg"), "jpg");
 
 	const saveJson = async () => {
 		const dataUrl = canvas.toJSON(JSON_KEYS);
@@ -110,9 +78,18 @@ const buildEditor = ({
 	};
 	const loadJson = (json: string) => {
 		const data = JSON.parse(json);
-		canvas.loadFromJSON(data, (data) => {
-			autoZoom();
-		});
+        if (!data || !Array.isArray(data.objects)) throw new Error("Invalid design file");
+        skipSave.current = true;
+        try {
+            canvas.loadFromJSON(data, () => {
+                autoZoom();
+                skipSave.current = false;
+                save();
+            });
+        } catch (error) {
+            skipSave.current = false;
+            throw error;
+        }
 	};
 	const getWorkspace = () => {
 		return canvas.getObjects().find((obj) => obj.name === "clip") as
@@ -172,12 +149,14 @@ const buildEditor = ({
 				fill: value,
 			});
 			canvas.renderAll();
+			save();
 			// TODO: save
 			save();
 		},
 		enableDrawingMode: () => {
 			canvas.discardActiveObject();
 			canvas.renderAll();
+			save();
 			canvas.isDrawingMode = true;
 			canvas.freeDrawingBrush.width = strokeWidth;
 			canvas.freeDrawingBrush.color = strokeColor;
@@ -218,6 +197,7 @@ const buildEditor = ({
 					imageObject.filters = effect ? [effect] : [];
 					imageObject.applyFilters();
 					canvas.renderAll();
+			save();
 				}
 			});
 		},
@@ -241,6 +221,7 @@ const buildEditor = ({
 			});
 			canvas.discardActiveObject();
 			canvas.renderAll();
+			save();
 		},
 		addText: (value, options) => {
 			const object = new fabric.Textbox(value, {
@@ -255,30 +236,35 @@ const buildEditor = ({
 				object.set({ opacity: value });
 			});
 			canvas.renderAll();
+			save();
 		},
 		changeFontWeight: (value: number) => {
 			canvas.getActiveObjects().forEach((object) => {
 				if (isTextType(object.type)) {
-					object.set({ fontWeight: value });
+					(object as fabric.Textbox).set({ fontWeight: value });
 				}
 			});
 			canvas.renderAll();
+			save();
 		},
 		changeFontStyle: (value: string) => {
 			canvas.getActiveObjects().forEach((object) => {
 				if (isTextType(object.type)) {
-					object.set({ fontStyle: value });
+					(object as fabric.Textbox).set({ fontStyle: value as fabric.Textbox["fontStyle"] });
 				}
 			});
 			canvas.renderAll();
+			save();
 		},
 		bringForward: () => {
 			canvas.getActiveObjects().forEach((object) => {
 				canvas.bringForward(object);
 			});
 			canvas.renderAll();
+			save();
 			const workspace = getWorkspace();
 			workspace?.sendToBack();
+			save();
 			// TODO: Elements could go below workspace overflow
 		},
 		sendBackwards: () => {
@@ -286,9 +272,11 @@ const buildEditor = ({
 				canvas.sendBackwards(object);
 			});
 			canvas.renderAll();
+			save();
 
 			const workspace = getWorkspace();
 			workspace?.sendToBack();
+			save();
 
 			// TODO: Elements could go below workspace overflow
 		},
@@ -298,6 +286,7 @@ const buildEditor = ({
 				object.set({ fill: value });
 			});
 			canvas.renderAll();
+			save();
 		},
 		changeStrokeWidth: (value: number) => {
 			setStrokeWidth(value);
@@ -306,6 +295,7 @@ const buildEditor = ({
 			});
 			canvas.freeDrawingBrush.width = value;
 			canvas.renderAll();
+			save();
 		},
 		changeStrokeDashArray: (value: number[]) => {
 			setStrokeDashArray(value);
@@ -313,6 +303,7 @@ const buildEditor = ({
 				object.set({ strokeDashArray: value });
 			});
 			canvas.renderAll();
+			save();
 		},
 		changeStrokeColor: (value: string) => {
 			setStrokeColor(value);
@@ -329,6 +320,7 @@ const buildEditor = ({
 
 			canvas.freeDrawingBrush.color = value;
 			canvas.renderAll();
+			save();
 		},
 		changeFontFamily: (value) => {
 			setFontFamily(value);
@@ -338,6 +330,7 @@ const buildEditor = ({
 				}
 			});
 			canvas.renderAll();
+			save();
 		},
 
 		addCircle() {
@@ -700,7 +693,7 @@ const buildEditor = ({
 			if (!selectedObject) {
 				return 1;
 			}
-			const value = selectedObject.get("opacity") || 1;
+			const value = selectedObject.get("opacity") ?? 1;
 			return value;
 		},
 
@@ -709,7 +702,7 @@ const buildEditor = ({
 			if (!selectedObject) {
 				return fontFamily;
 			}
-			const value = selectedObject.get("fontFmaily") || fontFamily;
+			const value = (selectedObject as fabric.Textbox).get("fontFamily") || fontFamily;
 			// curretly , gradiant & patterns are not supported
 			return value;
 		},
@@ -718,16 +711,16 @@ const buildEditor = ({
 			if (!selectedObject) {
 				return FONT_WEIGHT;
 			}
-			const value = selectedObject.get("fontWeight") || FONT_WEIGHT;
+			const value = (selectedObject as fabric.Textbox).get("fontWeight") || FONT_WEIGHT;
 			// curretly , gradiant & patterns are not supported
-			return value;
+			return Number(value) || FONT_WEIGHT;
 		},
 		getActiveFontStyle: () => {
 			const selectedObject = selectedObjects[0];
 			if (!selectedObject) {
 				return "normal";
 			}
-			const value = selectedObject.get("fontStyle") || "normal";
+			const value = (selectedObject as fabric.Textbox).get("fontStyle") || "normal";
 			// curretly , gradiant & patterns are not supported
 			return value;
 		},
@@ -736,7 +729,7 @@ const buildEditor = ({
 			if (!selectedObject) {
 				return false;
 			}
-			const value = selectedObject.get("linethrough") || false;
+			const value = (selectedObject as fabric.Textbox).get("linethrough") || false;
 			// curretly , gradiant & patterns are not supported
 			return value;
 		},
@@ -747,6 +740,7 @@ const buildEditor = ({
 				}
 			});
 			canvas.renderAll();
+			save();
 		},
 
 		getActiveFontUnderline: () => {
@@ -754,7 +748,7 @@ const buildEditor = ({
 			if (!selectedObject) {
 				return false;
 			}
-			const value = selectedObject.get("underline") || false;
+			const value = (selectedObject as fabric.Textbox).get("underline") || false;
 			// curretly , gradiant & patterns are not supported
 			return value;
 		},
@@ -765,13 +759,14 @@ const buildEditor = ({
 				}
 			});
 			canvas.renderAll();
+			save();
 		},
 		getActiveTextAlign: () => {
 			const selectedObject = selectedObjects[0];
 			if (!selectedObject) {
 				return "left";
 			}
-			const value = selectedObject.get("textAlign") || "left";
+			const value = (selectedObject as fabric.Textbox).get("textAlign") || "left";
 			// curretly , gradiant & patterns are not supported
 			return value;
 		},
@@ -782,13 +777,14 @@ const buildEditor = ({
 				}
 			});
 			canvas.renderAll();
+			save();
 		},
 		getActiveFontSize: () => {
 			const selectedObject = selectedObjects[0];
 			if (!selectedObject) {
 				return FONT_SIZE;
 			}
-			const value = selectedObject.get("fontSize") || FONT_SIZE;
+			const value = (selectedObject as fabric.Textbox).get("fontSize") || FONT_SIZE;
 			// curretly , gradiant & patterns are not supported
 			return value;
 		},
@@ -799,6 +795,7 @@ const buildEditor = ({
 				}
 			});
 			canvas.renderAll();
+			save();
 		},
 		canvas,
 		selectedObjects,
@@ -826,7 +823,7 @@ export const useEditor = ({
 		useState<number[]>(STROKE_DASH_ARRAY);
 	const [fontFamily, setFontFamily] = useState<string>(FONT_FAMILY);
 	const { copy, paste } = useClipboard({ canvas });
-	const { save, canRedo, canUndo, redo, undo, setHistoryIndex, canvasHistory } =
+	const { save, canRedo, canUndo, redo, undo, setHistoryIndex, canvasHistory, skipSave } =
 		useHistory({ canvas, saveCallback });
 
 	const { autoZoom } = useAutoResize({
@@ -841,12 +838,13 @@ export const useEditor = ({
 		clearSelectionCallback,
 	});
 
-	useLoadState({
+	const loadError = useLoadState({
 		autoZoom,
 		canvas,
 		canvasHistory,
 		initialState,
 		setHistoryIndex,
+		skipSave,
 	});
 
 	const editor = useMemo(() => {
@@ -872,6 +870,7 @@ export const useEditor = ({
 				copy,
 				paste,
 				autoZoom,
+				skipSave,
 			});
 		return undefined;
 	}, [
@@ -890,6 +889,7 @@ export const useEditor = ({
 		redo,
 		canRedo,
 		canUndo,
+		skipSave,
 	]);
 
 	useHotkeys({
@@ -1021,5 +1021,5 @@ export const useEditor = ({
 		],
 	);
 
-	return { init, editor };
+	return { init, editor, loadError };
 };

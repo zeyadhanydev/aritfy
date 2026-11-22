@@ -158,6 +158,7 @@ export const DIAMOND_OPTIONS = {
 };
 
 export type buildEditorProps = {
+	skipSave: React.RefObject<boolean>;
 	save: (skip?: boolean) => void;
 	undo: () => void;
 	redo: () => void;

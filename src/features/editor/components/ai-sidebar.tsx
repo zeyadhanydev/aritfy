@@ -29,7 +29,7 @@ export const AiSidebar = ({
 	onChangeActiveTool,
 }: AiSidebarProps) => {
 	const [value, setValue] = useState("");
-	const [aiModel, setAiModel] = useState("google");
+	const [aiModel, setAiModel] = useState<"google" | "huggingface" | "aritfy">("google");
 	const paywall = usePaywall();
 	const mutation = useGenerateImage();
 
@@ -70,7 +70,7 @@ export const AiSidebar = ({
 
 			<ScrollArea>
 				<form onSubmit={onSubmit} className="p-4 space-y-6">
-					<Select value={aiModel} onValueChange={setAiModel}>
+					<Select value={aiModel} onValueChange={(value) => { if (value === "google" || value === "huggingface" || value === "aritfy") setAiModel(value); }}>
 						<SelectTrigger className="w-[180px]">
 							<SelectValue placeholder="AI Provider" />
 						</SelectTrigger>

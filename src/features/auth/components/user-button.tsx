@@ -1,7 +1,6 @@
 "use client";
-import { Crown, Loader, LogOut } from "lucide-react";
+import { Loader, LogOut } from "lucide-react";
 import { BsCreditCard } from "react-icons/bs";
-import { motion } from "framer-motion";
 import { signOut, useSession } from "next-auth/react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -19,7 +18,8 @@ export const UserButton = () => {
 	const mutation = useBilling();
 	const { data: subscription, isLoading } = useGetSubscription();
 	const onClick = () => {
-		if (paywall.shouldBlock) {
+		if (paywall.isDemoPremium) return;
+        if (paywall.shouldBlock) {
 			paywall.triggerPaywall();
 			return;
 		}
@@ -29,7 +29,7 @@ export const UserButton = () => {
 	if (session.status === "loading") {
 		return <Loader className="size-4 animate-spin text-muted-foreground" />;
 	}
-	if (session.status === "unauthenticated" || !session.data) {
+	if (session.status === "unauthenticated" || !session.data?.user) {
 		return null;
 	}
 	const name = session.data.user.name!;
@@ -62,10 +62,10 @@ export const UserButton = () => {
 					<DropdownMenuItem
 						className="h-10 cursor-pointer"
 						onClick={onClick}
-						disabled={mutation.isPending}
+						disabled={mutation.isPending || paywall.isDemoPremium}
 					>
 						<BsCreditCard className="size-4 mr-2" />
-						Billing
+						{paywall.isDemoPremium ? "Demo Premium (no billing)" : "Billing"}
 					</DropdownMenuItem>
 					<DropdownMenuSeparator />
 					<DropdownMenuItem

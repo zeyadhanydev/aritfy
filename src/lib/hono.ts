@@ -1,3 +1,4 @@
 import { hc } from "hono/client";
 import type { AppType } from "@/app/api/[[...route]]/route";
-export const client = hc<AppType>(process.env.NEXT_PUBLIC_APP_URL);
+// Keep API traffic on the current origin, including isolated preview deployments.
+export const client = hc<AppType>("");

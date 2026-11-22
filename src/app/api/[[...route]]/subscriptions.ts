@@ -1,3 +1,5 @@
+import { isDemoPremium } from "@/features/subscription/demo-premium";
+import { invoiceSubscriptionId } from "@/lib/stripe-subscription";
 import Stripe from "stripe";
 import { Hono } from "hono";
 import { eq } from "drizzle-orm";
@@ -16,6 +18,8 @@ const app = new Hono()
     if (!auth.token?.id) {
       return c.json({ error: "Unauthorized" }, 401);
     }
+
+    if (isDemoPremium(auth.token.id)) return c.json({ error: "Demo Premium has no billing subscription." }, 403);
 
     const [subscription] = await db
       .select()
@@ -49,12 +53,14 @@ const app = new Hono()
       .from(subscriptions)
       .where(eq(subscriptions.userId, auth.token.id));
 
-    const active = checkIsActive(subscription);
+    const demoPremium = isDemoPremium(auth.token.id);
+    const active = demoPremium || checkIsActive(subscription);
 
     return c.json({
       data: {
         ...subscription,
         active,
+        demoPremium,
       },
     });
   })
@@ -64,6 +70,8 @@ const app = new Hono()
     if (!auth.token?.id) {
       return c.json({ error: "Unauthorized" }, 401);
     }
+
+    if (isDemoPremium(auth.token.id)) return c.json({ error: "Demo Premium is enabled without checkout." }, 403);
 
     const session = await stripe.checkout.sessions.create({
       success_url: `${process.env.NEXT_PUBLIC_APP_URL}?success=1`,
@@ -172,13 +180,14 @@ const app = new Hono()
         const invoice = event.data.object as Stripe.Invoice;
 
         // Skip if no subscription (e.g., one-time payments)
-        if (!invoice.subscription) {
+        const subscriptionId = invoiceSubscriptionId(invoice);
+        if (!subscriptionId) {
           console.log("Invoice has no subscription, skipping");
           return c.json(null, 200);
         }
 
         const subscription = await stripe.subscriptions.retrieve(
-          invoice.subscription as string,
+          subscriptionId,
         );
 
         console.log(`Updating subscription after payment success: ${subscription.id}`);
@@ -281,13 +290,14 @@ const app = new Hono()
         const invoice = event.data.object as Stripe.Invoice;
 
         // Skip if no subscription
-        if (!invoice.subscription) {
+        const subscriptionId = invoiceSubscriptionId(invoice);
+        if (!subscriptionId) {
           console.log("Invoice has no subscription, skipping payment failure update");
           return c.json(null, 200);
         }
 
         const subscription = await stripe.subscriptions.retrieve(
-          invoice.subscription as string,
+          subscriptionId,
         );
 
         console.log(`Updating subscription after payment failure: ${subscription.id} to ${subscription.status}`);

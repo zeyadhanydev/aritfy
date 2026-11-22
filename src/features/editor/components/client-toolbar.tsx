@@ -33,7 +33,7 @@ import { FontSizeInput } from "./fontsize-input";
 interface ToolbarProps {
 	editor: Editor | undefined;
 	activeTool: ActiveTool;
-	onChangeActiveTool: (tool: string) => void;
+	onChangeActiveTool: (tool: ActiveTool) => void;
 }
 
 interface ToolbarButtonProps {
@@ -149,12 +149,14 @@ export const ClientToolbar = ({
 		updateProperties();
 
 		// Listen for selection changes or property updates
-		editor.on?.("selection:changed", updateProperties);
-		editor.on?.("object:modified", updateProperties);
+		editor.canvas.on("selection:created", updateProperties);
+		editor.canvas.on("selection:updated", updateProperties);
+		editor.canvas.on("object:modified", updateProperties);
 
 		return () => {
-			editor.off?.("selection:changed", updateProperties);
-			editor.off?.("object:modified", updateProperties);
+			editor.canvas.off("selection:created", updateProperties);
+			editor.canvas.off("selection:updated", updateProperties);
+			editor.canvas.off("object:modified", updateProperties);
 		};
 	}, [editor]);
 
@@ -173,7 +175,7 @@ export const ClientToolbar = ({
 	);
 	const isImage = selectedObjectType === "image";
 	const hasSelection = useMemo(
-		() => editor?.selectedObjects.length > 0,
+		() => (editor?.selectedObjects.length ?? 0) > 0,
 		[editor?.selectedObjects?.length],
 	);
 
@@ -228,7 +230,7 @@ export const ClientToolbar = ({
 	}, [editor]);
 
 	const createToolHandler = useCallback(
-		(tool: string) => () => {
+		(tool: ActiveTool) => () => {
 			onChangeActiveTool(tool);
 		},
 		[onChangeActiveTool],

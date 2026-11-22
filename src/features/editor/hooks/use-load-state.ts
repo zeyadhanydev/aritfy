@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { fabric } from "fabric";
 import { JSON_KEYS } from "../types";
 
@@ -7,6 +7,7 @@ interface UseLoadStateProps {
 	canvas: fabric.Canvas | null;
 	initialState: React.RefObject<string | undefined>;
 	canvasHistory: React.RefObject<string[]>;
+	skipSave: React.RefObject<boolean>;
 	setHistoryIndex: React.Dispatch<React.SetStateAction<number>>;
 }
 
@@ -16,18 +17,21 @@ export const useLoadState = ({
 	canvasHistory,
 	initialState,
 	setHistoryIndex,
+	skipSave,
 }: UseLoadStateProps) => {
 	const initialized = useRef(false);
+	const [loadError, setLoadError] = useState<string | null>(null);
 
 	useEffect(() => {
-		console.log(!initialized.current, initialState.current, canvas);
 		if (!initialized.current && initialState?.current && canvas) {
+			skipSave.current = true;
 			try {
 				// Validate and clean the JSON string
 				const jsonString = initialState.current.trim();
 
 				// Check if it's valid JSON
 				const parsedData = JSON.parse(jsonString);
+                if (!parsedData || !Array.isArray(parsedData.objects)) throw new Error("Invalid design data");
 
 				canvas.loadFromJSON(parsedData, () => {
 					const currentState = JSON.stringify(canvas.toJSON(JSON_KEYS));
@@ -36,22 +40,18 @@ export const useLoadState = ({
 					}
 					setHistoryIndex(0);
 					autoZoom();
+					skipSave.current = false;
 				});
 				initialized.current = true;
-			} catch (error) {
-				console.error("Failed to parse initial state JSON:", error);
-				console.error("JSON content:", initialState.current);
-				// Reset to empty canvas if JSON is invalid
-				canvas.clear();
-				const currentState = JSON.stringify(canvas.toJSON(JSON_KEYS));
-				if (canvasHistory.current) {
-					canvasHistory.current = [currentState];
-				}
-				setHistoryIndex(0);
-				autoZoom();
-				initialized.current = true;
+			} catch {
+				console.error("Failed to load saved design.");
+                // Keep the stored design untouched and block autosave after a load failure.
+                initialized.current = true;
+                skipSave.current = true;
+                setLoadError("This saved design could not be loaded. Your stored data has not been changed.");
 			}
 		}
 		// no need for canvasHistory => ref, initialState => ref, setHistoryIndex => Dispatch
-	}, [canvas, autoZoom, initialState, canvasHistory, setHistoryIndex]);
+	}, [canvas, autoZoom, initialState, canvasHistory, setHistoryIndex, skipSave]);
+	return loadError;
 };

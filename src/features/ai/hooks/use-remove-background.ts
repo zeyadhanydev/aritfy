@@ -1,121 +1,49 @@
 import { useState } from "react";
 import { useRemoveBgImage } from "@/features/ai/api/use-remove-bg";
-import {
-  initRemoveBackgroundModel,
-  isModelLoaded,
-  removeBackground,
-} from "@/lib/remove-bg-model";
 
-interface UseRemoveBackgroundOptions {
-  preferClientSide?: boolean;
-}
-
+interface UseRemoveBackgroundOptions { preferClientSide?: boolean; }
 interface RemoveBackgroundResult {
-  imageUrl: string | null;
-  isLoading: boolean;
-  error: string | null;
-  progress: string;
+ imageUrl: string | null;
+ isLoading: boolean;
+ error: string | null;
+ progress: string;
 }
 
 export function useRemoveBackground(options: UseRemoveBackgroundOptions = {}) {
-  const [result, setResult] = useState<RemoveBackgroundResult>({
-    imageUrl: null,
-    isLoading: false,
-    error: null,
-    progress: "",
-  });
+ const [result, setResult] = useState<RemoveBackgroundResult>({ imageUrl: null, isLoading: false, error: null, progress: "" });
+ const { mutateAsync: removeBgServer } = useRemoveBgImage();
 
-  // Server-side API call
-  const { mutateAsync: removeBgServer } = useRemoveBgImage();
+ const processClient = async (imageUrl: string) => {
+  const model = await import("@/lib/remove-bg-model");
+  setResult(prev => ({ ...prev, progress: "Loading background removal model..." }));
+  if (!model.isModelLoaded()) await model.initRemoveBackgroundModel();
+  setResult(prev => ({ ...prev, progress: "Removing background..." }));
+  const response = await model.removeBackground(imageUrl);
+  if (response.error) throw new Error(response.error);
+  return response.image;
+ };
 
-  // Function to remove background
-  const removeBackgroundFromImage = async (imageUrl: string) => {
-    setResult({
-      imageUrl: null,
-      isLoading: true,
-      error: null,
-      progress: "Processing image...",
-    });
-
+ const removeBackgroundFromImage = async (imageUrl: string): Promise<string | null> => {
+  setResult({ imageUrl: null, isLoading: true, error: null, progress: "Processing image..." });
+  try {
+   let processed: string;
+   if (options.preferClientSide && typeof window !== "undefined") {
+    processed = await processClient(imageUrl);
+   } else {
     try {
-      // Decide whether to use client-side or server-side processing
-      if (options.preferClientSide && typeof window !== "undefined") {
-        // Use client-side processing
-        setResult((prev) => ({
-          ...prev,
-          progress: "Initializing client-side model...",
-        }));
-
-        // Check if model is loaded, if not, initialize it
-        if (!isModelLoaded()) {
-          setResult((prev) => ({
-            ...prev,
-            progress: "Loading background removal model...",
-          }));
-          await initRemoveBackgroundModel();
-        }
-
-        setResult((prev) => ({
-          ...prev,
-          progress: "Removing background...",
-        }));
-
-        // Process the image
-        const result = await removeBackground(imageUrl);
-
-        if (result.error) {
-          throw new Error(result.error);
-        }
-
-        setResult({
-          imageUrl: result.image,
-          isLoading: false,
-          error: null,
-          progress: "Complete",
-        });
-      } else {
-        // Use server-side processing
-        setResult((prev) => ({
-          ...prev,
-          progress: "Sending to server...",
-        }));
-
-        const response = await removeBgServer({ image: imageUrl });
-
-        if (response.error) {
-          throw new Error(response.error);
-        }
-
-        if (response.fallbackToClient) {
-          // Server-side processing failed, fallback to client-side
-          setResult((prev) => ({
-            ...prev,
-            progress: "Falling back to client-side processing...",
-          }));
-          return removeBackgroundFromImage(imageUrl);
-        }
-
-        setResult({
-          imageUrl: response.data,
-          isLoading: false,
-          error: null,
-          progress: "Complete",
-        });
-      }
+     processed = (await removeBgServer({ image: imageUrl })).data;
     } catch (error) {
-      console.error("Error removing background:", error);
-      setResult({
-        imageUrl: null,
-        isLoading: false,
-        error: error instanceof Error ? error.message : "Unknown error occurred",
-        progress: "Failed",
-      });
+     if (typeof window === "undefined") throw error;
+     // Fall back once, without recursively repeating the server request.
+     processed = await processClient(imageUrl);
     }
-  };
-
-  return {
-    ...result,
-    removeBackground: removeBackgroundFromImage,
-    isClientSideAvailable: typeof window !== "undefined",
-  };
+   }
+   setResult({ imageUrl: processed, isLoading: false, error: null, progress: "Complete" });
+   return processed;
+  } catch (error) {
+   setResult({ imageUrl: null, isLoading: false, error: error instanceof Error ? error.message : "Background removal failed", progress: "Failed" });
+   return null;
+  }
+ };
+ return { ...result, removeBackground: removeBackgroundFromImage, isClientSideAvailable: typeof window !== "undefined" };
 }

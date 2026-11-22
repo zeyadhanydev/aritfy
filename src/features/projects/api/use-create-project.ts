@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import type { InferResponseType } from "hono";
+import type { InferRequestType, InferResponseType } from "hono";
 import { toast } from "sonner";
 import { client } from "@/lib/hono";
 
@@ -9,9 +9,11 @@ type ResponseType = InferResponseType<
 	200
 >;
 
+type RequestType = InferRequestType<(typeof client.api.projects)["$post"]>["json"];
+
 export const useCreateProject = () => {
 	const queryClient = useQueryClient();
-	const mutation = useMutation<ResponseType>({
+	const mutation = useMutation<ResponseType, Error, RequestType>({
 		mutationFn: async (json) => {
 			const response = await client.api.projects.$post({
 				json,

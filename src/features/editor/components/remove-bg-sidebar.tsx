@@ -29,7 +29,6 @@ export const RemoveBgSidebar = ({
 	const {
 		removeBackground,
 		isLoading,
-		imageUrl,
 		error,
 		progress,
 		isClientSideAvailable,
@@ -47,11 +46,11 @@ export const RemoveBgSidebar = ({
 
 		if (!imageSrc) return;
 
-		await removeBackground(imageSrc);
+		const processedImage = await removeBackground(imageSrc);
 
 		// Add the image to the editor when processing is complete
-		if (imageUrl) {
-			editor?.addImage(imageUrl);
+		if (processedImage) {
+			editor?.addImage(processedImage);
 		}
 	};
 

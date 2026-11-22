@@ -54,7 +54,7 @@ export const Navbar = () => {
 							<DropdownMenuItem disabled>Loading projects...</DropdownMenuItem>
 						) : recentProjects.length > 0 ? (
 							<>
-								{recentProjects.map((project: any) => (
+								{recentProjects.map((project) => (
 									<DropdownMenuItem
 										key={project.id}
 										className="flex items-center gap-2 cursor-pointer"

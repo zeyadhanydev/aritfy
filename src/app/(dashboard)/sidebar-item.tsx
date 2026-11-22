@@ -1,35 +1,17 @@
 import type { LucideIcon } from "lucide-react";
 import Link from "next/link";
-import type { UrlObject } from "url";
+import type { Route } from "next";
 import { cn } from "@/lib/utils";
 
-interface SidebarItemProps {
-	icon: LucideIcon;
-	label: string;
-	href: string;
-	isActive?: boolean;
-	onClick?: () => void;
-}
+type SidebarItemProps = {
+ icon: LucideIcon;
+ label: string;
+ isActive?: boolean;
+ disabled?: boolean;
+} & ({ href: Route; onClick?: never } | { href?: never; onClick: () => void });
 
-export const SidebarItem = ({
-	icon: Icon,
-	label,
-	href,
-	isActive,
-	onClick,
-}: SidebarItemProps) => {
-	return (
-		// @ts-expect-error href is assinged to string
-		<Link href={href} onClick={onClick}>
-			<div
-				className={cn(
-					"flex items-center px-3 py-3 rounded-xl bg-background/20 hover:bg-white dark:hover:bg-background/50 transition",
-					isActive && "bg-background",
-				)}
-			>
-				<Icon className="size-4 stroke-2 mr-2" />
-				<span className="text-sm font-medium">{label}</span>
-			</div>
-		</Link>
-	);
+export const SidebarItem = ({ icon: Icon, label, href, isActive, onClick, disabled }: SidebarItemProps) => {
+ const className = cn("w-full flex items-center px-3 py-3 rounded-xl bg-background/20 hover:bg-white dark:hover:bg-background/50 transition", isActive && "bg-background");
+ const content = <><Icon className="size-4 stroke-2 mr-2" /><span className="text-sm font-medium">{label}</span></>;
+ return href ? <Link href={href} className={className}>{content}</Link> : <button type="button" disabled={disabled} onClick={onClick} className={className}>{content}</button>;
 };
