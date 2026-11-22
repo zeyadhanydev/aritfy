@@ -1,188 +1,84 @@
-import type { ImageSegmentationPipeline } from "@huggingface/transformers";
+import { CUTOUT_SIZE, MAX_CUTOUT_PIXELS, cutoutMaskPixels, normalizeCutoutPixels } from "./remove-bg-pixels";
 
-/**
- * Interface for the remove background result
- */
-interface RemoveBackgroundResult {
-	image: string; // Base64 encoded image with transparent background
-	error?: string; // Error message if processing failed
+interface RemoveBackgroundResult { image: string; error?: string; }
+type WorkerReply = { id: number; ready?: boolean; mask?: Float32Array; error?: string };
+let worker: Worker | null = null;
+let ready = false;
+let counter = 0;
+let processing = false;
+let initialization: Promise<void> | null = null;
+const pending = new Map<number, { resolve: (reply: WorkerReply) => void; reject: (error: Error) => void; timer: ReturnType<typeof setTimeout> }>();
+
+function resetWorker(message: string) {
+  worker?.terminate(); worker = null; ready = false; initialization = null;
+  for (const request of pending.values()) { clearTimeout(request.timer); request.reject(new Error(message)); }
+  pending.clear();
 }
-
-let pipe: ImageSegmentationPipeline | null = null;
-
-/**
- * Initializes the background removal model
- * @returns Promise that resolves when the model is loaded
- */
+function getWorker() {
+  if (!worker) {
+    if (typeof Worker === "undefined" || typeof WebAssembly === "undefined") throw new Error("This browser does not support local background removal.");
+    worker = new Worker(new URL("./remove-bg.worker.ts", import.meta.url), { type: "module" });
+    worker.onmessage = ({ data }: MessageEvent<WorkerReply>) => {
+      const request = pending.get(data.id); if (!request) return;
+      clearTimeout(request.timer); pending.delete(data.id);
+      if (data.error) request.reject(new Error(data.error));
+      else { if (data.ready) ready = true; request.resolve(data); }
+    };
+    worker.onerror = () => resetWorker("The local background model stopped. Try again, or use a smaller photo.");
+    worker.onmessageerror = () => resetWorker("The background model returned an unreadable response.");
+  }
+  return worker;
+}
+function request(type: "init" | "segment", pixels?: Float32Array): Promise<WorkerReply> {
+  const target = getWorker(); const id = ++counter;
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => resetWorker("Background removal timed out. Try a smaller photo or another browser."), 90_000);
+    pending.set(id, { resolve, reject, timer });
+    target.postMessage({ id, type, pixels }, pixels ? [pixels.buffer] : []);
+  });
+}
 export async function initRemoveBackgroundModel(): Promise<void> {
-	if (typeof window === "undefined") {
-		console.warn(
-			"Background removal model can only be initialized in browser environment",
-		);
-		return;
-	}
+  if (ready) return;
+  if (!initialization) initialization = request("init").then(() => undefined).catch(error => { initialization = null; throw error; });
+  await initialization;
+}
+export function isModelLoaded(): boolean { return ready; }
 
-	if (pipe) {
-		return; // Already initialized
-	}
-
-	try {
-		// Dynamically import transformers.js to avoid SSR issues
-		const { pipeline } = await import("@huggingface/transformers");
-
-		// Initialize the pipeline with RMBG-1.4 model
-		const createSegmentationPipeline = pipeline as (task: "image-segmentation", model: string) => Promise<ImageSegmentationPipeline>;
-		pipe = await createSegmentationPipeline("image-segmentation", "briaai/RMBG-1.4");
-
-		console.log("Background removal model initialized successfully");
-	} catch (error) {
-		console.error("Failed to initialize background removal model:", error);
-		throw new Error("Failed to initialize background removal model");
-	}
+export async function removeBackground(imageUrl: string): Promise<RemoveBackgroundResult> {
+  if (processing) return { image: imageUrl, error: "Background removal is already running." };
+  processing = true;
+  try {
+    const image = new Image(); image.crossOrigin = "anonymous";
+    image.src = imageUrl;
+    let imageTimer: ReturnType<typeof setTimeout> | undefined;
+    try {
+      await Promise.race([image.decode(), new Promise<never>((_, reject) => { imageTimer = setTimeout(() => { image.src = ""; reject(new Error("The source image took too long to load.")); }, 20_000); })]);
+    } finally { clearTimeout(imageTimer); }
+    if (!image.naturalWidth || !image.naturalHeight || image.naturalWidth * image.naturalHeight > MAX_CUTOUT_PIXELS) throw new Error("Use a photo no larger than 8 megapixels for local background removal.");
+    const small = document.createElement("canvas"); small.width = small.height = CUTOUT_SIZE;
+    const input = small.getContext("2d"); if (!input) throw new Error("Canvas is unavailable.");
+    input.drawImage(image, 0, 0, CUTOUT_SIZE, CUTOUT_SIZE);
+    const pixels = normalizeCutoutPixels(input.getImageData(0, 0, CUTOUT_SIZE, CUTOUT_SIZE).data);
+    await initRemoveBackgroundModel();
+    const reply = await request("segment", pixels);
+    if (!reply.mask) throw new Error("No background mask was returned.");
+    const maskPixels = cutoutMaskPixels(reply.mask);
+    const maskImage = input.createImageData(CUTOUT_SIZE, CUTOUT_SIZE); maskImage.data.set(maskPixels); input.putImageData(maskImage, 0, 0);
+    const canvas = document.createElement("canvas"); canvas.width = image.naturalWidth; canvas.height = image.naturalHeight;
+    const output = canvas.getContext("2d"); if (!output) throw new Error("Canvas is unavailable.");
+    output.drawImage(image, 0, 0);
+    // Multiplication preserves any transparency already present in the source image.
+    output.globalCompositeOperation = "destination-in";
+    output.drawImage(small, 0, 0, canvas.width, canvas.height);
+    output.globalCompositeOperation = "source-over";
+    return { image: canvas.toDataURL("image/png") };
+  } catch (error) {
+    return { image: imageUrl, error: error instanceof Error ? error.message : "Background removal failed." };
+  } finally { processing = false; }
 }
 
-/**
- * Removes the background from an image
- * @param imageUrl URL of the image (can be a blob URL, data URL, or remote URL)
- * @returns Promise that resolves with the processed image as a base64 string
- */
-export async function removeBackground(
-	imageUrl: string,
-): Promise<RemoveBackgroundResult> {
-	try {
-		if (!pipe) {
-			await initRemoveBackgroundModel();
-
-			if (!pipe) {
-				throw new Error("Background removal model not initialized");
-			}
-		}
-
-		// Create an image element to load the image
-		const imageEl = new Image();
-		imageEl.crossOrigin = "anonymous"; // Enable CORS for remote images
-
-		// Wait for the image to load
-		await new Promise<void>((resolve, reject) => {
-			imageEl.onload = () => resolve();
-			imageEl.onerror = () => reject(new Error("Failed to load image"));
-			imageEl.src = imageUrl;
-		});
-
-		// Process the image with the model
-		const result = await pipe(imageEl.src);
-
-		if (!result || !result[0] || !result[0].mask) {
-			throw new Error("Invalid model output");
-		}
-
-		// Get the mask from the model output
-		const mask = result[0].mask;
-
-		// Get original image dimensions
-		const origWidth = imageEl.naturalWidth;
-		const origHeight = imageEl.naturalHeight;
-
-		// Create canvas for result
-		const canvas = document.createElement("canvas");
-		canvas.width = origWidth;
-		canvas.height = origHeight;
-		const ctx = canvas.getContext("2d");
-
-		if (!ctx) {
-			throw new Error("Failed to get canvas context");
-		}
-
-		// Draw original image
-		ctx.drawImage(imageEl, 0, 0);
-		const imageData = ctx.getImageData(0, 0, origWidth, origHeight);
-
-		// Process mask data
-		if (!mask || !mask.data || !mask.width || !mask.height) {
-			throw new Error("Invalid mask data");
-		}
-
-		// Convert mask data to array and find min/max values
-		const maskArray = new Float32Array(mask.width * mask.height);
-		let min = Infinity;
-		let max = -Infinity;
-
-		for (let i = 0; i < mask.width * mask.height; i++) {
-			const value = mask.data[i] || 0;
-			maskArray[i] = value;
-			min = Math.min(min, value);
-			max = Math.max(max, value);
-		}
-
-		// Normalize mask values
-		for (let i = 0; i < maskArray.length; i++) {
-			maskArray[i] = (max === min ? (max > 0 ? 1 : 0) : (maskArray[i] - min) / (max - min));
-		}
-
-		// Apply mask to image alpha channel
-		const data = imageData.data;
-		const scaleX = origWidth / mask.width;
-		const scaleY = origHeight / mask.height;
-
-		for (let y = 0; y < origHeight; y++) {
-			for (let x = 0; x < origWidth; x++) {
-				// Calculate mask position
-				const maskX = Math.floor(x / scaleX);
-				const maskY = Math.floor(y / scaleY);
-				const maskIndex = maskY * mask.width + maskX;
-
-				// Calculate target image position
-				const imageIndex = (y * origWidth + x) * 4;
-
-				// Set alpha channel based on mask value
-				const alpha = Math.round(maskArray[maskIndex] * 255);
-				data[imageIndex + 3] = alpha;
-			}
-		}
-
-		// Put processed data back to canvas
-		ctx.putImageData(imageData, 0, 0);
-
-		// Convert to base64
-		const base64Image = canvas.toDataURL("image/png");
-
-		return { image: base64Image };
-	} catch (error) {
-		console.error("Error removing background:", error);
-		return {
-			image: imageUrl, // Return original image on error
-			error: error instanceof Error ? error.message : "Unknown error",
-		};
-	}
-}
-
-/**
- * Checks if the background removal model is loaded
- * @returns Boolean indicating if the model is loaded
- */
-export function isModelLoaded(): boolean {
-	return pipe !== null;
-}
-
-/**
- * Fetches an image from a URL and returns a Blob URL
- * Useful for handling CORS issues with remote images
- * @param url The URL of the image to fetch
- * @returns Promise that resolves with a Blob URL
- */
 export async function fetchImageAsBlob(url: string): Promise<string> {
-	try {
-		const response = await fetch(url, { mode: "cors" });
-		if (!response.ok) {
-			throw new Error(
-				`Failed to fetch image: ${response.status} ${response.statusText}`,
-			);
-		}
-
-		const blob = await response.blob();
-		return URL.createObjectURL(blob);
-	} catch (error) {
-		console.error("Error fetching image:", error);
-		throw error;
-	}
+  const response = await fetch(url, { mode: "cors" });
+  if (!response.ok) throw new Error("The source image could not be loaded.");
+  return URL.createObjectURL(await response.blob());
 }

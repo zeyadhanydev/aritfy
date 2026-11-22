@@ -1,0 +1,22 @@
+U2-NetP automatic salient-object cutout model
+
+U2-Net: Going Deeper with Nested U-Structure for Salient Object Detection.
+Xuebin Qin, Zichen Zhang, Chenyang Huang, Masood Dehghan, Osmar R. Zaiane, Martin Jagersand (2020).
+Upstream: https://github.com/xuebinqin/U-2-Net
+License: Apache License 2.0. See /models/LICENSE-U2NET.txt.
+
+The unchanged u2netp.onnx file is distributed by rembg, MIT license:
+https://github.com/danielgatis/rembg/releases/download/v0.0.0/u2netp.onnx
+https://github.com/danielgatis/rembg
+rembg's MIT license: /models/LICENSE-REMBG.txt.
+Model length: 4,574,861 bytes.
+SHA-256: 309c8469258dda742793dce0ebea8e6dd393174f89934733ecc8b14c76f4ddd8
+Verified against the checksum in rembg's upstream U2netpSession.
+
+This is the general u2netp model, not the separately trained portrait-sketch model.
+The small model produces a foreground alpha mask. Its result is approximate, particularly for fine hair, transparent objects and cluttered scenes.
+
+Runtime: ONNX Runtime Web 1.22.0, Microsoft Corporation, MIT.
+See /onnx/LICENSE.txt, /onnx/NOTICE.txt and /onnx/ThirdPartyNotices.txt.
+The runtime notices were retained from the upstream v1.22.0 distribution.
+Images are processed locally in a Web Worker using CPU/WebAssembly. There is no AI inference service, API key, per-image credit charge or external-provider fallback in this feature.

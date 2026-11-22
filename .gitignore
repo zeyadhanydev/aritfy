@@ -45,3 +45,6 @@ certificates
 # Google OAuth credentials
 auth.json
 **/auth.json
+
+# Generated from the pinned runtime package during build.
+/public/onnx/
