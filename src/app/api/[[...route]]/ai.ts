@@ -21,7 +21,8 @@ const app = new Hono()
 	.post("/remove-bg", verifyAuth(), zValidator("json", z.object({
 		image: z.url({ protocol: /^https$/ }).max(4096),
 	})), async (c) => {
-		const { image } = c.req.valid("json");
+		if (process.env.SERVER_BACKGROUND_REMOVAL_ENABLED !== "true") return c.json({error: "Server background removal is disabled in this no-charge release", fallbackToClient: false}, 503);
+        const { image } = c.req.valid("json");
 		const endpoint = process.env.REMOVE_BG_MODEL;
 		const key = process.env.API_KEY;
 		if (!endpoint || !key) return c.json({ error: "Background removal is not configured", fallbackToClient: true }, 503);
@@ -38,7 +39,8 @@ const app = new Hono()
 		prompt: z.string().trim().min(1).max(4000),
 		model: z.enum(["google", "huggingface", "aritfy"]).default("google"),
 	})), async (c) => {
-		const { prompt, model } = c.req.valid("json");
+		if (process.env.AI_IMAGE_GENERATION_ENABLED !== "true") return c.json({error: "AI generation is unavailable in this release. Use the labeled sample artwork instead."}, 503);
+        const { prompt, model } = c.req.valid("json");
 		try {
 			if (model === "aritfy") {
 				const endpoint = process.env.GENERATE_IMAGE_MODAL_ENDPOINT;

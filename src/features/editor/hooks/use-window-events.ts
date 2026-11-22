@@ -1,6 +1,10 @@
-import { useEvent } from "react-use";
-export const useWindowEvents = () => {
-	useEvent("beforeunload", (event) => {
-		(event || window.event).returnValue = "Are you sure you want to leave?";
-	});
+import { useEffect } from "react";
+
+export const useWindowEvents = (hasUnsavedChanges = false) => {
+  useEffect(() => {
+    if (!hasUnsavedChanges) return;
+    const warn = (event: BeforeUnloadEvent) => {event.preventDefault(); event.returnValue = "";};
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [hasUnsavedChanges]);
 };

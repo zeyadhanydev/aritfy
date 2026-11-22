@@ -30,7 +30,7 @@ export const useHotkeys = ({
 			(event.target as HTMLElement).tagName,
 		);
 
-		if (isInput) return;
+		if (isInput || (event.target as HTMLElement).isContentEditable || document.querySelector('[role="dialog"][data-state="open"], [role="alertdialog"][data-state="open"]')) return;
 		if (isBackspace) {
 			canvas?.remove(...canvas.getActiveObjects());
 			canvas?.discardActiveObject();

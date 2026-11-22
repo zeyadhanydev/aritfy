@@ -1,7 +1,10 @@
 "use client";
 
 import { AlertTriangle, Crown, Loader } from "lucide-react";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
+import { TemplateFilters, type TemplateAccess, type TemplateSource } from "@/features/projects/components/template-filters";
+import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ToolSidebarHeader } from "@/features/editor/components/tool-sidebar-header";
 import { type ActiveTool, type Editor } from "@/features/editor/types";
@@ -29,9 +32,14 @@ export const TemplateSidebar = ({
 	const onClose = useCallback(() => {
 		onChangeActiveTool("select");
 	}, [onChangeActiveTool]);
-	const { data, isLoading, isError } = useGetTemplates({
+    const [search, setSearch] = useState("");
+    const [access, setAccess] = useState<TemplateAccess>("all");
+    const [source, setSource] = useState<TemplateSource>("all");
+    const debouncedSearch = useDebouncedValue(search);
+	const { data, isLoading, isError, hasNextPage, fetchNextPage, isFetchingNextPage } = useGetTemplates({
 		limit: "20",
 		page: "1",
+        search: debouncedSearch, access, source,
 	});
 	const paywall = usePaywall();
 
@@ -55,9 +63,11 @@ export const TemplateSidebar = ({
 			<ConfirmDialog />
 			<ToolSidebarHeader
 				title="Template"
-				description="Choose from a varity of templates to get started"
+				description="Search first-party and community templates"
 			/>
 
+            <div className="p-4 border-b"><TemplateFilters compact search={search} onSearch={setSearch} access={access} onAccess={setAccess} source={source} onSource={setSource} /></div>
+            {!isLoading && !isError && !data?.length && <p className="p-4 text-sm text-muted-foreground" role="status">No templates match these filters.</p>}
 			{isLoading && (
 				<div className="flex items-center justify-center flex-1">
 					<Loader className="size-4 text-muted-foreground animate-spin" />
@@ -107,7 +117,8 @@ export const TemplateSidebar = ({
 						);
 					})}
 				</div>
-			</ScrollArea>
+			{hasNextPage && <div className="p-4"><Button className="w-full" variant="outline" disabled={isFetchingNextPage} onClick={() => fetchNextPage()}>{isFetchingNextPage ? "Loading..." : "Load more templates"}</Button></div>}
+            </ScrollArea>
 
 			<ToolSidebarClose onClick={onClose} />
 		</aside>

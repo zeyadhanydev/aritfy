@@ -1,25 +1,27 @@
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 
 import { client } from "@/lib/hono";
-import { BUILT_IN_TEMPLATES } from "../built-in-templates";
-import { InferRequestType } from "hono";
+import { InferRequestType, InferResponseType } from "hono";
 type RequestType = InferRequestType<
 	typeof client.api.projects.templates.$get
 >["query"];
 
 export const useGetTemplates = (apiQuery: RequestType) => {
-	const query = useQuery({
-		queryKey: ["templates", { page: apiQuery.page, limit: apiQuery.limit }],
-		queryFn: async () => {
+	const query = useInfiniteQuery<InferResponseType<typeof client.api.projects.templates.$get, 200>, Error>({
+        initialPageParam: Number(apiQuery.page ?? 1),
+        getNextPageParam: lastPage => lastPage.nextPage,
+		queryKey: ["templates", apiQuery],
+		queryFn: async ({pageParam}) => {
 			const response = await client.api.projects.templates.$get({
-				query: apiQuery,
+				query: {...apiQuery, page: String(pageParam)},
 			});
 			if (!response.ok) {
 				throw new Error("Failed to fetch templates");
 			}
-			const { data } = await response.json();
-			return [...BUILT_IN_TEMPLATES, ...data];
+			const result = await response.json();
+            const {data} = result;
+			return {data, nextPage: result.nextPage};
 		},
 	});
-	return query;
+	return {...query, data: query.data?.pages.flatMap(page => page.data)};
 };

@@ -66,3 +66,25 @@ Keep provider keys server-side, out of source and logs. Removing a leaked key fr
 ## Self-contained templates and safe loading
 
 Three editable vector templates are included with the app and use local thumbnails and system fonts, without an external image host. Existing saved templates are retained. Some older templates depend on external assets that may be unavailable. If objects fail to load, the editor blocks editing and autosave rather than overwriting the stored design with a partial canvas. JSON import uses a labeled file input and accepts files up to 20 MB.
+
+## Search and saved versions
+
+Project search is owner-scoped and covers the database, not only loaded pages. Project size filters support portrait, landscape and square designs. Template search combines first-party vector templates with the existing community catalog, with source/access filters and pagination.
+
+Saved versions are explicit named checkpoints, separate from autosave and in-session undo. Preview does not change the current design. Restore saves the current design as a `pre_restore` backup in the same database transaction before replacing its content. Stale-tab writes are rejected using a content revision and an atomic compare-and-swap update. Autosaves are serialized, and failed saves retain the latest local payload for retry/export.
+
+Conservative storage limits: 20 versions per project, 50 per account, 512 KiB serialized JSON per version and 32 MiB serialized version JSON instance-wide. A full cap blocks new snapshots/restores; nothing is silently deleted. Raster bytes embedded in JSON count toward the cap. Versions cascade only when their own project/account is explicitly deleted.
+
+### Additive schema rollout
+
+`migrations/20261122_project_versions.sql` adds only the version table, its index, and transaction functions. It does not rewrite existing projects or authentication/billing records. `pnpm test` runs isolated PostgreSQL-compatible fixtures (PGlite), including ownership, idempotency, atomic restore/backup, stale writes and all storage caps. This is not a multi-connection production load test.
+
+The migration is not run by request handlers. The build runner is inert unless the owner-controlled `APPLY_PROJECT_VERSIONS_MIGRATION=1` is present on the specific review branch in Preview. The runner refuses an unrecognized existing version table and applies the statements in one transaction. Remove that branch-scoped switch after verifying the first successful migration. Preview may share the production database; a Preview deployment is not proof of data isolation.
+
+Rollback the application deployment if needed, but retain the additive version table and snapshots. Do not drop user versions as a rollback shortcut, and do not run a broad schema push. For other environments, review and apply the same tested additive SQL through a controlled migration process.
+
+The database module is server-only. Prefer `DATABASE_URL`; the legacy public-prefixed variable remains a temporary compatibility fallback and should be renamed at the deployment configuration layer without printing its value.
+
+## No-charge sample release
+
+AI image generation is unavailable in this release. The editor's sample-artwork panel inserts a fixed, first-party SVG illustration and labels it as not AI-generated. It does not send a prompt to a provider, download a model or consume inference credits. Provider routes are disabled by default; do not enable them without a separate usage/cost decision and controls. Existing provider adapters are not proof of a working or no-charge AI service. Server background removal is also disabled by default.

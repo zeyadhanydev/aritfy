@@ -30,7 +30,6 @@ import {
 import { useClipboard } from "./use-clipboard";
 import { useHistory } from "./use-history";
 import { useHotkeys } from "./use-hotkeys";
-import { useWindowEvents } from "./use-window-events";
 import { useLoadState } from "./use-load-state";
 import { exportRaster, exportSvg } from "../export";
 import { designIsComplete, INCOMPLETE_DESIGN_MESSAGE, normalizeDesignForLoad } from "../design-integrity";
@@ -838,7 +837,6 @@ export const useEditor = ({
 		canvas,
 		container,
 	});
-	useWindowEvents();
 	useCanvasEvents({
 		save,
 		canvas,

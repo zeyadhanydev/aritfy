@@ -1,4 +1,5 @@
 "use client";
+import { VersionsDialog } from "@/features/projects/components/versions-dialog";
 import { toast } from "sonner";
 import {
 	ChevronDown,
@@ -38,15 +39,19 @@ interface NavbarProps {
 	activeTool: ActiveTool;
 	onChangeActiveTool: (tool: ActiveTool) => void;
 	id: string;
+    saveStatus: "saved" | "pending" | "error";
+    saveError: string | null;
+    onFlush: () => Promise<string>;
 }
 
 export const Navbar = ({
 	activeTool,
 	onChangeActiveTool,
 	editor,
-	id,
+	id, saveStatus, saveError, onFlush,
 }: NavbarProps) => {
 	const [isRenaming, setIsRenaming] = useState(false);
+    const [versionsOpen, setVersionsOpen] = useState(false);
 	const { data: project } = useGetProject(id);
 	const data = useMutationState({
 		filters: {
@@ -57,8 +62,8 @@ export const Navbar = ({
 	});
 	const currentStatus = data[data.length - 1];
 
-	const isError = currentStatus === "error";
-	const isPending = currentStatus === "pending";
+	const isError = saveStatus === "error" || currentStatus === "error";
+	const isPending = saveStatus === "pending" || currentStatus === "pending";
 
     const [importOpen, setImportOpen] = useState(false);
     const importFile = async (file: File | undefined) => {
@@ -71,7 +76,8 @@ export const Navbar = ({
     };
 	return (
 		<div className="w-full flex items-center p-4 h-[68px] gap-x-8 border-b bg-background lg:pl-[34px]">
-			<Dialog open={importOpen} onOpenChange={setImportOpen}>
+			<VersionsDialog open={versionsOpen} onOpenChange={setVersionsOpen} projectId={id} editor={editor} onFlush={onFlush} />
+            <Dialog open={importOpen} onOpenChange={setImportOpen}>
                 <DialogContent>
                     <DialogHeader><DialogTitle>Open JSON design</DialogTitle><DialogDescription>A successful import replaces the current canvas. Choose an Aritfy JSON design, up to 20 MB.</DialogDescription></DialogHeader>
                     <Input type="file" accept=".json,application/json" aria-label="Choose JSON design" onChange={(event) => { void importFile(event.currentTarget.files?.[0]); }} />
@@ -159,7 +165,7 @@ export const Navbar = ({
 					</Button>
 				</Hint>
 				<Hint label="Redo" side="bottom" sideOffset={10}>
-					<Button
+					<Button aria-label="Redo"
 						variant={"ghost"}
 						size={"icon"}
 						disabled={!editor?.canRedo()}
@@ -180,7 +186,7 @@ export const Navbar = ({
 				{!isPending && isError && (
 					<div className="flex items-center gap-x-2">
 						<BsCloudSlash className="size-[20px] text-muted-foreground" />
-						<p className="text-xs text-muted-foreground">Failed to save</p>
+						<button type="button" className="text-xs text-destructive underline" title={saveError ?? "Failed to save"} onClick={() => {void onFlush().catch(() => {});}}>Save failed. Retry</button>
 					</div>
 				)}
 
@@ -192,6 +198,7 @@ export const Navbar = ({
 				)}
 
 				<div className="ml-auto flex items-center gap-x-4">
+                    <Button variant="ghost" size="sm" onClick={() => setVersionsOpen(true)}>Versions</Button>
 					<DropdownMenu modal={false}>
 						<DropdownMenuTrigger asChild>
 							<Button variant={"ghost"} size={"sm"}>

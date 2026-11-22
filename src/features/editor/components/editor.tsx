@@ -2,7 +2,7 @@
 
 import { fabric } from "fabric";
 import Link from "next/link";
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { AiSidebar } from "@/features/editor/components/ai-sidebar";
 import { FillColorSidebar } from "@/features/editor/components/fill-color-sidebar";
 import { FilterSidebar } from "@/features/editor/components/filter-sidebar";
@@ -28,23 +28,15 @@ import {
 import type { ResponseType } from "@/features/projects/api/use-get-project";
 import { DrawSidebar } from "./draw-sidebar";
 import { SettingsSidebar } from "./settings-sidebar";
-import { useUpdateProject } from "@/features/projects/api/use-update-project";
-import debounce from "lodash.debounce";
+import { useProjectAutosave } from "@/features/projects/api/use-project-autosave";
+import { useWindowEvents } from "../hooks/use-window-events";
 
 interface EditorProps {
 	initialData: ResponseType["data"];
 }
 export const Editor = ({ initialData }: EditorProps) => {
-	const { mutate } = useUpdateProject(initialData.id);
-
-	const debouncedSave = useMemo(() =>
-		debounce((values: { json: string; height: number; width: number }) => {
-			mutate(values);
-		}, 500),
-		[mutate],
-	);
-
-	useEffect(() => () => { debouncedSave.flush(); }, [debouncedSave]);
+    const autosave = useProjectAutosave(initialData.id, initialData.revision);
+    useWindowEvents(autosave.status !== "saved");
 
 	const [activeTool, setActiveTool] = useState<ActiveTool>("select");
 	const onClearSelection = useCallback(() => {
@@ -57,7 +49,7 @@ export const Editor = ({ initialData }: EditorProps) => {
 		defaultWidth: initialData.width,
 		defaultHeight: initialData.height,
 		clearSelectionCallback: onClearSelection,
-		saveCallback: debouncedSave,
+		saveCallback: autosave.save,
 	});
 
 	const onChangeActiveTool = useCallback(
@@ -103,6 +95,9 @@ export const Editor = ({ initialData }: EditorProps) => {
 				onChangeActiveTool={onChangeActiveTool}
 				editor={editor}
 				id={initialData.id}
+                saveStatus={autosave.status}
+                saveError={autosave.error}
+                onFlush={autosave.flush}
 			/>
 			<div className="absolute inset-x-0 top-[68px] bottom-0 flex min-h-0 min-w-0 overflow-hidden">
 				<Sidebar

@@ -6,17 +6,18 @@ export type ResponseType = InferResponseType<
 	200
 >;
 
-export const useGetProjects = () => {
+export const useGetProjects = (filters: { search?: string; orientation?: "all" | "portrait" | "landscape" | "square" } = {}) => {
 	const query = useInfiniteQuery<ResponseType, Error>({
 		// if exits turn it to bool
 		initialPageParam: 1,
 		getNextPageParam: (lastPage) => lastPage.nextPage,
-		queryKey: ["projects"],
+		queryKey: ["projects", filters],
 		queryFn: async ({ pageParam }) => {
 			const response = await client.api.projects.$get({
 				query: {
 					page: (pageParam as number).toString(),
 					limit: "5",
+                    ...filters,
 				},
 			});
 			if (!response.ok) {

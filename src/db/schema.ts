@@ -3,6 +3,7 @@ import { relations } from "drizzle-orm";
 import {
 	boolean,
 	integer,
+    index,
 	pgTable,
 	primaryKey,
 	text,
@@ -114,6 +115,19 @@ export const projects = pgTable("project", {
 	createdAt: timestamp("createdAt", { mode: "date" }).notNull(),
 	updatedAt: timestamp("updatedAt", { mode: "date" }).notNull(),
 });
+
+export const projectVersions = pgTable("projectVersion", {
+  id: text("id").primaryKey(),
+  projectId: text("projectId").notNull().references(() => projects.id, {onDelete: "cascade"}),
+  userId: text("userId").notNull().references(() => users.id, {onDelete: "cascade"}),
+  label: text("label").notNull(),
+  json: text("json").notNull(),
+  width: integer("width").notNull(),
+  height: integer("height").notNull(),
+  kind: text("kind", {enum: ["manual", "pre_restore"]}).notNull(),
+  targetVersionId: text("targetVersionId"),
+  createdAt: timestamp("createdAt", {mode: "date"}).notNull().defaultNow(),
+}, table => [index("projectVersion_owner_project_created").on(table.userId, table.projectId, table.createdAt)]);
 
 export const projectRelations = relations(projects, ({ one }) => ({
 	user: one(users, {

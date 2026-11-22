@@ -22,7 +22,8 @@ export const useUpdateProject = (id: string) => {
 				param: { id },
 			});
 			if (!response.ok) {
-				throw new Error("Failed to update project");
+				const result = await response.json();
+                throw new Error("error" in result ? result.error : "Failed to update project");
 			}
 			return response.json();
 		},
@@ -34,8 +35,8 @@ export const useUpdateProject = (id: string) => {
 				queryKey: ["projects"],
 			});
 		},
-		onError: () => {
-			toast.error("Failed to update project");
+		onError: (error) => {
+			toast.error(error.message);
 		},
 	});
 	return mutation;

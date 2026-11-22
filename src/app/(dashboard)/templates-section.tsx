@@ -1,5 +1,9 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+import { useState } from "react";
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
+import { TemplateFilters, type TemplateAccess, type TemplateSource } from "@/features/projects/components/template-filters";
 import { useGetTemplates } from "@/features/projects/api/use-get-templates";
 import { Loader, TriangleAlert } from "lucide-react";
 import { TemplateCard } from "./template-card";
@@ -9,38 +13,18 @@ import { usePaywall } from "@/features/subscription/hooks/use-paywall";
 
 export const TemplatesSection = () => {
 	const paywall = usePaywall();
-	const { data, isLoading, isError } = useGetTemplates({
+    const [search, setSearch] = useState("");
+    const [access, setAccess] = useState<TemplateAccess>("all");
+    const [source, setSource] = useState<TemplateSource>("all");
+    const debouncedSearch = useDebouncedValue(search);
+	const { data, isLoading, isError, hasNextPage, fetchNextPage, isFetchingNextPage } = useGetTemplates({
 		page: "1",
 		limit: "20",
+        search: debouncedSearch, access, source,
 	});
 	const mutation = useCreateProject();
 	const router = useRouter();
-	if (isLoading) {
-		return (
-			<div className="space-y-4">
-				<h3 className="font-medium text-lg">Start from a template</h3>
-				<div className="flex items-center justify-center h-32">
-					<Loader className="size-6 animate-spin text-muted-foreground" />
-				</div>
-			</div>
-		);
-	}
-	if (isError) {
-		return (
-			<div className="space-y-4">
-				<h3 className="font-medium text-lg">Start from a template</h3>
-				<div className="flex flex-col gap-y-4 items-center justify-center h-32">
-					<TriangleAlert className="size-6 text-muted-foreground" />
-					<p>Failed to load templates</p>
-				</div>
-			</div>
-		);
-	}
-	if (!data?.length) {
-		return null;
-	}
 	const onClick = (template: NonNullable<typeof data>[number]) => {
-		// TODO: check if the tempalate is pro
 		if (template.isPro && paywall.shouldBlock) {
 			paywall.triggerPaywall();
 			return;
@@ -66,11 +50,15 @@ export const TemplatesSection = () => {
 					Start from a template
 				</h3>
 				<p className="text-sm text-gray-500 dark:text-gray-400">
-					Choose from our collection of professional templates
+					First-party vectors and community designs
 				</p>
 			</div>
+            <TemplateFilters search={search} onSearch={setSearch} access={access} onAccess={setAccess} source={source} onSource={setSource} />
+            <div aria-live="polite" className="text-sm text-muted-foreground">
+              {isLoading ? <span className="flex gap-2 items-center"><Loader className="size-4 animate-spin" />Loading templates...</span> : isError ? <span className="flex gap-2 items-center"><TriangleAlert className="size-4" />Failed to load templates. Try another source.</span> : !data?.length ? "No templates match these filters." : `${data.length} templates shown`}
+            </div>
 			<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-				{data.map((template) => (
+				{data?.map((template) => (
 					<TemplateCard
 						imgSrc={template.thumbnailUrl || ""}
 						key={template.id}
@@ -81,11 +69,12 @@ export const TemplatesSection = () => {
 						title={template.name}
 						disabled={mutation.isPending}
 						description={
-							`Professional ${template.name.toLowerCase()} template`
+							template.source === "local" ? "First-party vector. No remote image assets." : `Community ${template.name.toLowerCase()} template`
 						}
 					/>
 				))}
 			</div>
+            {hasNextPage && <Button variant="outline" disabled={isFetchingNextPage} onClick={() => fetchNextPage()}>{isFetchingNextPage ? "Loading..." : "Load more templates"}</Button>}
 		</div>
 	);
 };
