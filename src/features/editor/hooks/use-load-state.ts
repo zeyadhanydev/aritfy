@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { fabric } from "fabric";
 import { JSON_KEYS } from "../types";
-import { designIsComplete, INCOMPLETE_DESIGN_MESSAGE } from "../design-integrity";
+import { designIsComplete, INCOMPLETE_DESIGN_MESSAGE, normalizeDesignForLoad } from "../design-integrity";
 
 interface UseLoadStateProps {
 	autoZoom: () => void;
@@ -32,6 +32,7 @@ export const useLoadState = ({
 
 				// Check if it's valid JSON
 				const parsedData = JSON.parse(jsonString);
+                normalizeDesignForLoad(parsedData);
                 if (!parsedData || !Array.isArray(parsedData.objects)) throw new Error("Invalid design data");
 
 				canvas.loadFromJSON(parsedData, () => {

@@ -1,7 +1,7 @@
 import type { fabric } from "fabric";
 import { useCallback, useRef, useState } from "react";
 import { JSON_KEYS } from "../types";
-import { designIsComplete, INCOMPLETE_DESIGN_MESSAGE } from "../design-integrity";
+import { designIsComplete, INCOMPLETE_DESIGN_MESSAGE, normalizeDesignForLoad } from "../design-integrity";
 
 type UseHistoryProps = {
 	canvas: fabric.Canvas | null;
@@ -60,6 +60,7 @@ export const useHistory = ({ canvas, saveCallback }: UseHistoryProps) => {
 		(nextIndex: number) => {
 			if (!canvas || skipSave.current || nextIndex < 0 || nextIndex >= canvasHistory.current.length) return;
 			const state = JSON.parse(canvasHistory.current[nextIndex]);
+            normalizeDesignForLoad(state);
 			skipSave.current = true;
 			try {
 				canvas.loadFromJSON(state, () => {

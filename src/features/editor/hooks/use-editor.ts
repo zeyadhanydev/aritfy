@@ -33,7 +33,7 @@ import { useHotkeys } from "./use-hotkeys";
 import { useWindowEvents } from "./use-window-events";
 import { useLoadState } from "./use-load-state";
 import { exportRaster, exportSvg } from "../export";
-import { designIsComplete, INCOMPLETE_DESIGN_MESSAGE } from "../design-integrity";
+import { designIsComplete, INCOMPLETE_DESIGN_MESSAGE, normalizeDesignForLoad } from "../design-integrity";
 
 export const buildEditor = ({
     onLoadError,
@@ -80,6 +80,7 @@ export const buildEditor = ({
 	};
 	const loadJson = (json: string) => {
 		const data = JSON.parse(json);
+        normalizeDesignForLoad(data);
         if (!data || !Array.isArray(data.objects)) throw new Error("Invalid design file");
         skipSave.current = true;
         try {

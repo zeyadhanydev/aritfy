@@ -3,7 +3,7 @@ import React, { act } from 'react';
 import { JSDOM } from 'jsdom';
 import { useHistory } from '../src/features/editor/hooks/use-history';
 import { useLoadState } from '../src/features/editor/hooks/use-load-state';
-import { designIsComplete } from '../src/features/editor/design-integrity';
+import { designIsComplete, normalizeDesignForLoad } from '../src/features/editor/design-integrity';
 import { exportRaster, exportSvg } from '../src/features/editor/export';
 
 async function main() {
@@ -117,3 +117,7 @@ async function main() {
  console.log('PASS: undo/redo final-state persistence, redo branching, duplicate snapshots, initial load suppression and incomplete-asset autosave guard, PNG/JPEG/SVG formats, viewport restoration.');
 }
 main().catch(error => { console.error(error); process.exitCode = 1; });
+
+const legacyText = {objects:[{type:"textbox",text:"Example",styles:undefined}]};
+normalizeDesignForLoad(legacyText);
+assert.deepEqual(legacyText.objects[0].styles,{});

@@ -13,3 +13,10 @@ export function designIsComplete(expected: unknown, actual: unknown): boolean {
 }
 
 export const INCOMPLETE_DESIGN_MESSAGE = 'Some design objects or images could not be loaded. Editing and autosave are paused to protect your stored design. Check the image sources, then reopen the project.';
+
+export function normalizeDesignForLoad(value: unknown): void {
+    if (!value || typeof value !== 'object') return;
+    const node = value as { type?: string; styles?: unknown; objects?: unknown[] };
+    if (['textbox', 'text', 'i-text'].includes(node.type ?? '') && node.styles == null) node.styles = {};
+    if (Array.isArray(node.objects)) node.objects.forEach(normalizeDesignForLoad);
+}
