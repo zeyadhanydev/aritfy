@@ -43,17 +43,8 @@ export const SubscriptionModal = () => {
 						<CheckCircle2 className="size-5 mr-2 fill-blue-500 text-white" />
 						<p className="text-sm text-muted-foreground">Unlimited templates</p>
 					</li>
-					<li className="flex items-center">
-						<CheckCircle2 className="size-5 mr-2 fill-blue-500 text-white" />
-						<p className="text-sm text-muted-foreground">
-							AI Background removal
-						</p>
-					</li>
-					<li className="flex items-center">
-						<CheckCircle2 className="size-5 mr-2 fill-blue-500 text-white" />
-						<p className="text-sm text-muted-foreground">AI Image generation</p>
-					</li>
 				</ul>
+                <p className="text-sm text-muted-foreground">AI image generation and background removal are not included in this release.</p>
 				<DialogFooter className="pt-2 mt-4 gap-y-2">
 					<Button
 						className="w-full"

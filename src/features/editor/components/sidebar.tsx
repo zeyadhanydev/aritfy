@@ -53,7 +53,7 @@ export const Sidebar = ({ activeTool, onChangeActiveTool }: SidebarProps) => {
 				/>
 				<SidebarItem
 					icon={Sparkles}
-					label="Sparkles"
+					label="Sample art"
 					isActive={activeTool === "ai"}
 					onClick={() => onChangeActiveTool("ai")}
 				/>

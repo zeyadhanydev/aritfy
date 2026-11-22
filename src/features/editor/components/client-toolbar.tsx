@@ -372,10 +372,10 @@ export const ClientToolbar = ({
 			)}
 			{isImage && (
 				<div className="flex justify-center items-center h-full">
-					<Hint label="Remove background" side="bottom" sideOffset={5}>
+					<Hint label="Background removal is deferred in this release" side="bottom" sideOffset={5}>
 						<Button
-							aria-label="Remove background"
-							onClick={() => onChangeActiveTool("remove-bg")}
+							aria-label="Background removal unavailable"
+                            disabled
 							size={"icon"}
 							variant={"ghost"}
 							className={cn(activeTool === "remove-bg" && "bg-gray-100")}

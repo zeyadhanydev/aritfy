@@ -4,14 +4,14 @@
   "private": true,
   "scripts": {
     "dev": "next dev --experimental-https",
-    "build": "node scripts/prepare-background-assets.mjs && node scripts/migrate-project-versions.mjs && next build",
+    "build": "node scripts/migrate-project-versions.mjs && next build",
     "start": "next start",
     "lint": "eslint src tests scripts --quiet",
     "db:generate": "npx drizzle-kit generate",
     "db:migrate": "npx drizzle-kit migrate",
     "db": "npx drizzle-kit generate && npx drizzle-kit migrate",
     "db:studio": "npx drizzle-kit studio",
-    "test": "tsx tests/editor-regressions.tsx && tsx tests/editor-mutations.ts && tsx tests/autosave-safety.tsx && node tests/project-versions.mjs && tsx tests/remove-background.ts && tsx tests/library-loading.tsx",
+    "test": "tsx tests/editor-regressions.tsx && tsx tests/editor-mutations.ts && tsx tests/autosave-safety.tsx && node tests/project-versions.mjs && tsx tests/remove-background.ts && tsx tests/library-loading.tsx && node tests/limited-release.mjs",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
