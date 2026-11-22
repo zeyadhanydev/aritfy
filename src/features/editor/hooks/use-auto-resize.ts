@@ -6,13 +6,21 @@ interface UseAutoResizeProps {
 	container: HTMLDivElement | null;
 }
 
+export function measureCanvasContainer(container: Pick<HTMLDivElement, "offsetWidth" | "offsetHeight" | "isConnected">) {
+    const width = container.offsetWidth;
+    const height = container.offsetHeight;
+    if (!container.isConnected || !Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) return null;
+    return { width, height };
+}
+
 export const useAutoResize = ({ canvas, container }: UseAutoResizeProps) => {
 	const autoZoom = useCallback(() => {
 		if (!canvas || !container) return;
-		const width = container.offsetWidth;
-		const height = container.offsetHeight;
-		canvas.setWidth(width);
-		canvas.setHeight(height);
+		const size = measureCanvasContainer(container);
+        if (!size) return;
+        const { width, height } = size;
+        if (canvas.width !== width) canvas.setWidth(width);
+        if (canvas.height !== height) canvas.setHeight(height);
 		const center = canvas.getCenter();
 		const zoomRatio = 0.85;
 		const localWorkspace = canvas
@@ -26,6 +34,7 @@ export const useAutoResize = ({ canvas, container }: UseAutoResizeProps) => {
 			height,
 		});
 		const zoom = zoomRatio * scale;
+        if (!Number.isFinite(zoom) || zoom <= 0) return;
 		canvas.setViewportTransform(fabric.iMatrix.concat());
 		canvas.zoomToPoint(new fabric.Point(center.left, center.top), zoom);
 		const workspaceCenter = localWorkspace.getCenterPoint();

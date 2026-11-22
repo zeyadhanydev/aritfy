@@ -101,7 +101,7 @@ export const Editor = ({ initialData }: EditorProps) => {
 				editor={editor}
 				id={initialData.id}
 			/>
-			<div className="absolute h-[calc(100%-68px)] w-full top-[68px] flex">
+			<div className="absolute inset-x-0 top-[68px] bottom-0 flex min-h-0 min-w-0 overflow-hidden">
 				<Sidebar
 					activeTool={activeTool}
 					onChangeActiveTool={onChangeActiveTool}
@@ -178,7 +178,7 @@ export const Editor = ({ initialData }: EditorProps) => {
 					activeTool={activeTool}
 					onChangeActiveTool={onChangeActiveTool}
 				/>
-				<main className="bg-muted flex-1 overflow-auto relative flex flex-col">
+				<main className="bg-muted flex-1 min-h-0 min-w-0 overflow-hidden relative flex flex-col">
 					<Toolbar
 						editor={editor}
 						activeTool={activeTool}
@@ -187,10 +187,10 @@ export const Editor = ({ initialData }: EditorProps) => {
 					/>
 					<div
 						ref={containerRef}
-						className="flex-1 bg-muted h-[calc(100%-124px)]"
+						className="flex-1 min-h-0 min-w-0 bg-muted relative overflow-hidden"
 					>
 						{/* containerRef, canvasRef control the canvas area responsive in the page and centerd in the page */}
-						<canvas ref={canvasRef} />
+						<div className="absolute inset-0"><canvas ref={canvasRef} /></div>
 					</div>
 					<Footer editor={editor} />
 				</main>

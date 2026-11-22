@@ -1,3 +1,4 @@
+import { measureCanvasContainer } from '../src/features/editor/hooks/use-auto-resize';
 import { BUILT_IN_TEMPLATES } from '../src/features/projects/built-in-templates';
 import assert from 'node:assert/strict';
 import { JSDOM } from 'jsdom';
@@ -52,3 +53,9 @@ for (const template of BUILT_IN_TEMPLATES) {
  assert.equal(design.clipPath.height, template.height);
 }
 console.log("PASS: three self-contained vector templates with matching workspace dimensions and no remote images.");
+
+assert.equal(measureCanvasContainer({offsetWidth:0,offsetHeight:500,isConnected:true}),null);
+assert.equal(measureCanvasContainer({offsetWidth:800,offsetHeight:0,isConnected:true}),null);
+assert.equal(measureCanvasContainer({offsetWidth:800,offsetHeight:500,isConnected:false}),null);
+assert.deepEqual(measureCanvasContainer({offsetWidth:800,offsetHeight:500,isConnected:true}),{width:800,height:500});
+console.log("PASS: disconnected and zero-size canvas containers do not start an invalid resize.");

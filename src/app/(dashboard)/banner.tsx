@@ -65,8 +65,7 @@ export const Banner = () => {
 					transition={{ duration: 0.5, delay: 0.5 }}
 					className="text-xs md:text-sm mb-2 "
 				>
-					Turn inspiration into design in no time. Simply upload an image and
-					let AI do the rest
+					Create posters and social designs with editable templates, text and shapes. AI tools require a configured provider.
 				</motion.p>
 				<Button
 					variant="secondary"
