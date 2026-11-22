@@ -63,7 +63,7 @@ export const VersionsDialog = ({open, onOpenChange, projectId, editor, onFlush}:
   });
   const busy = save.isPending || restore.isPending || remove.isPending;
   const selectedSummary = versions.data?.data.find(item => item.id === selected);
-  return <Dialog open={open} onOpenChange={value => {if (!busy) onOpenChange(value);}}><DialogContent className="max-w-5xl max-h-[90dvh] overflow-y-auto">
+  return <Dialog open={open} onOpenChange={value => {if (!busy) onOpenChange(value);}}><DialogContent className="sm:max-w-5xl max-h-[90dvh] overflow-y-auto">
     <ConfirmRestore /><ConfirmDelete />
     <DialogHeader><DialogTitle className="flex items-center gap-2"><Clock3 className="size-5" />Saved versions</DialogTitle><DialogDescription>Named restore points stay available after reopening. Autosave and session undo are separate.</DialogDescription></DialogHeader>
     <div className="flex flex-col sm:flex-row gap-2"><Input aria-label="Version name" maxLength={80} value={label} onChange={event => setLabel(event.target.value)} disabled={busy} /><Button onClick={() => save.mutate()} disabled={busy || !label.trim() || !editor || versions.isError || versions.isPending || (versions.data?.data.length ?? 0) >= 20}><Save className="size-4 mr-2" />{save.isPending ? 'Saving version...' : 'Save current version'}</Button></div>

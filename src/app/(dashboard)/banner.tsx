@@ -65,7 +65,7 @@ export const Banner = () => {
 					transition={{ duration: 0.5, delay: 0.5 }}
 					className="text-xs md:text-sm mb-2 "
 				>
-					Create posters and social designs with editable templates, text and shapes. AI tools require a configured provider.
+					Create posters and social designs with editable templates, text and shapes. Use fixed sample artwork without an AI service.
 				</motion.p>
 				<Button
 					variant="secondary"
