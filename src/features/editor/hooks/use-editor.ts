@@ -32,7 +32,7 @@ import { useHistory } from "./use-history";
 import { useHotkeys } from "./use-hotkeys";
 import { useLoadState } from "./use-load-state";
 import { exportRaster, exportSvg } from "../export";
-import { designIsComplete, INCOMPLETE_DESIGN_MESSAGE, normalizeDesignForLoad } from "../design-integrity";
+import { designIsComplete, INCOMPLETE_DESIGN_MESSAGE, normalizeDesignForLoad, portableDesign } from "../design-integrity";
 
 export const buildEditor = ({
     onLoadError,
@@ -74,7 +74,7 @@ export const buildEditor = ({
 		// that might contain special characters like `&` or `/`,
 		// you would use `encodeURIComponent` to prevent them from
 		// being interpreted as part of the URL structure.
-		const fileString = `data:text/json;charset=utf-8,${encodeURIComponent(JSON.stringify(dataUrl, null, "\t"))}`;
+		const fileString = `data:text/json;charset=utf-8,${encodeURIComponent(JSON.stringify(portableDesign(dataUrl), null, "\t"))}`;
 		downloadFile(fileString, "json");
 	};
 	const loadJson = (json: string) => {

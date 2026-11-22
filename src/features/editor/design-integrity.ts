@@ -20,3 +20,17 @@ export function normalizeDesignForLoad(value: unknown): void {
     if (['textbox', 'text', 'i-text'].includes(node.type ?? '') && node.styles == null) node.styles = {};
     if (Array.isArray(node.objects)) node.objects.forEach(normalizeDesignForLoad);
 }
+
+export function portableDesign(value: unknown, origin = typeof window === 'undefined' ? undefined : window.location.origin): unknown {
+    if (!value || typeof value !== 'object') return value;
+    if (Array.isArray(value)) return value.map(item => portableDesign(item, origin));
+    const result: Record<string, unknown> = {};
+    for (const [key, item] of Object.entries(value)) result[key] = portableDesign(item, origin);
+    if (origin && result.type === 'image' && typeof result.src === 'string') {
+        try {
+            const url = new URL(result.src, origin);
+            if (url.origin === origin && url.pathname === '/samples/studio-still-life.svg' && !url.search && !url.hash) result.src = url.pathname;
+        } catch { /* An unrelated image source is left untouched. */ }
+    }
+    return result;
+}

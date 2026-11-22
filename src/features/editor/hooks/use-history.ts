@@ -1,7 +1,7 @@
 import type { fabric } from "fabric";
 import { useCallback, useRef, useState } from "react";
 import { JSON_KEYS } from "../types";
-import { designIsComplete, INCOMPLETE_DESIGN_MESSAGE, normalizeDesignForLoad } from "../design-integrity";
+import { designIsComplete, INCOMPLETE_DESIGN_MESSAGE, normalizeDesignForLoad, portableDesign } from "../design-integrity";
 
 type UseHistoryProps = {
 	canvas: fabric.Canvas | null;
@@ -34,7 +34,7 @@ export const useHistory = ({ canvas, saveCallback }: UseHistoryProps) => {
 		const height = workspace?.height;
 		if (!width || !height) return;
 		saveCallback?.({
-			json: JSON.stringify(canvas.toJSON(JSON_KEYS)),
+			json: JSON.stringify(portableDesign(canvas.toJSON(JSON_KEYS))),
 			width,
 			height,
 		});
@@ -45,7 +45,7 @@ export const useHistory = ({ canvas, saveCallback }: UseHistoryProps) => {
 			// Fabric emits object events while loading a saved state. Do not
 			// record or persist those incomplete intermediate canvases.
 			if (!canvas || skipSave.current) return;
-			const json = JSON.stringify(canvas.toJSON(JSON_KEYS));
+			const json = JSON.stringify(portableDesign(canvas.toJSON(JSON_KEYS)));
 			if (!skip && canvasHistory.current[indexRef.current] !== json) {
 				canvasHistory.current = canvasHistory.current.slice(0, indexRef.current + 1);
 				canvasHistory.current.push(json);

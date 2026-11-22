@@ -10,6 +10,7 @@ import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle} fro
 import {useConfirm} from '@/hooks/use-confirm';
 import {type Editor, JSON_KEYS} from '@/features/editor/types';
 import {VersionPreview} from './version-preview';
+import {portableDesign} from '@/features/editor/design-integrity';
 
 type Summary = {id: string; label: string; width: number; height: number; kind: 'manual' | 'pre_restore'; createdAt: string};
 const read = async <T,>(response: Response): Promise<T> => {
@@ -37,7 +38,7 @@ export const VersionsDialog = ({open, onOpenChange, projectId, editor, onFlush}:
       if (!editor) throw new Error('The editor is not ready.');
       const workspace = editor.canvas.getObjects().find(object => object.name === 'clip');
       if (!workspace?.width || !workspace.height) throw new Error('The workspace could not be read.');
-      const json = JSON.stringify(editor.canvas.toJSON(JSON_KEYS));
+      const json = JSON.stringify(portableDesign(editor.canvas.toJSON(JSON_KEYS)));
       if (new TextEncoder().encode(json).length > 524288) throw new Error('This design is above the 512 KB version limit. Export its JSON instead.');
       const signature = JSON.stringify([label.trim(), json, workspace.width, workspace.height]);
       if (saveRequest.current?.signature !== signature) saveRequest.current = {signature, id: crypto.randomUUID()};

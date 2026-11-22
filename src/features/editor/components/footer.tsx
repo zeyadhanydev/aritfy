@@ -11,7 +11,7 @@ interface FooterProps {
 export const Footer = ({ editor }: FooterProps) => {
 	return (
 		<footer className="h-[52px] border-t bg-background w-full flex items-center justify-between overflow-x-auto z-[49] p-2 gap-x-1 shrink-0">
-			<div className="flex items-center gap-x-2">
+			<div className="hidden md:flex items-center gap-x-2">
 				<div className="flex items-center gap-x-1 text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
 					<Hand className="size-3" />
 					<span>Hold Alt + drag to pan • Mouse wheel to zoom</span>
@@ -19,7 +19,7 @@ export const Footer = ({ editor }: FooterProps) => {
 			</div>
 			<div className="flex items-center gap-x-1">
 				<Hint label="Reset" side="top" sideOffset={10}>
-					<Button
+					<Button aria-label="Reset"
 						onClick={() => editor?.autoZoom()}
 						size={"icon"}
 						variant={"ghost"}
@@ -29,7 +29,7 @@ export const Footer = ({ editor }: FooterProps) => {
 					</Button>
 				</Hint>
 				<Hint label="Zoom in" side="top" sideOffset={10}>
-					<Button
+					<Button aria-label="Zoom in"
 						onClick={() => editor?.zoomIn()}
 						size={"icon"}
 						variant={"ghost"}
@@ -39,7 +39,7 @@ export const Footer = ({ editor }: FooterProps) => {
 					</Button>
 				</Hint>
 				<Hint label="Zoom out" side="top" sideOffset={10}>
-					<Button
+					<Button aria-label="Zoom out"
 						onClick={() => editor?.zoomOut()}
 						size={"icon"}
 						variant={"ghost"}

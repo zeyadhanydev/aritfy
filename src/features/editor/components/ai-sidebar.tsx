@@ -8,7 +8,7 @@ import {cn} from '@/lib/utils';
 
 interface AiSidebarProps {activeTool: ActiveTool; onChangeActiveTool: (tool: ActiveTool) => void; editor: Editor | undefined}
 export const AiSidebar = ({activeTool, editor, onChangeActiveTool}: AiSidebarProps) => (
-  <aside className={cn('bg-background relative border-r z-[40] w-[360px] h-full flex flex-col', activeTool === 'ai' ? 'visible' : 'hidden')}>
+  <aside data-editor-panel className={cn('bg-background relative border-r z-[40] w-[360px] h-full flex flex-col', activeTool === 'ai' ? 'visible' : 'hidden')}>
     <ToolSidebarHeader title="Sample artwork" description="Try image editing without an AI service" />
     <ScrollArea className="flex-1"><div className="p-4 space-y-4">
       <div className="rounded-lg border bg-muted p-3 text-sm"><p className="font-medium">AI generation is not available in this release.</p><p className="mt-2 text-muted-foreground">This is fixed sample artwork, not an AI-generated result. Inserting it does not call a generation provider.</p></div>

@@ -3,6 +3,7 @@ import { VersionsDialog } from "@/features/projects/components/versions-dialog";
 import { toast } from "sonner";
 import {
 	ChevronDown,
+	Clock3,
 	Download,
 	Loader,
 	MousePointerClick,
@@ -68,23 +69,23 @@ export const Navbar = ({
     const [importOpen, setImportOpen] = useState(false);
     const importFile = async (file: File | undefined) => {
         if (!file || !editor) return;
-        if (file.size > 20 * 1024 * 1024) { toast.error("Choose a JSON design smaller than 20 MB."); return; }
+        if (file.size > 1024 * 1024) { toast.error("Choose a JSON design smaller than 1 MB."); return; }
         try {
             editor.loadJson(await file.text());
             setImportOpen(false);
         } catch { toast.error("This JSON file could not be opened."); }
     };
 	return (
-		<div className="w-full flex items-center p-4 h-[68px] gap-x-8 border-b bg-background lg:pl-[34px]">
+		<div className="w-full flex items-center p-2 sm:p-4 h-[68px] gap-x-2 lg:gap-x-8 border-b bg-background lg:pl-[34px]">
 			<VersionsDialog open={versionsOpen} onOpenChange={setVersionsOpen} projectId={id} editor={editor} onFlush={onFlush} />
             <Dialog open={importOpen} onOpenChange={setImportOpen}>
                 <DialogContent>
-                    <DialogHeader><DialogTitle>Open JSON design</DialogTitle><DialogDescription>A successful import replaces the current canvas. Choose an Aritfy JSON design, up to 20 MB.</DialogDescription></DialogHeader>
+                    <DialogHeader><DialogTitle>Open JSON design</DialogTitle><DialogDescription>A successful import replaces the current canvas. Choose an Aritfy JSON design, up to 1 MB. Export a JSON backup before replacing a design.</DialogDescription></DialogHeader>
                     <Input type="file" accept=".json,application/json" aria-label="Choose JSON design" onChange={(event) => { void importFile(event.currentTarget.files?.[0]); }} />
                 </DialogContent>
             </Dialog>
             <Logo />
-			<div className="w-full flex items-center gap-x-1 h-full">
+			<div className="flex-1 min-w-0 flex items-center gap-x-0.5 sm:gap-x-1 h-full">
 				{project && (
 					<>
 						<DropdownMenu modal={false}>
@@ -92,7 +93,7 @@ export const Navbar = ({
 								<Button
 									size="sm"
 									variant="ghost"
-									className="gap-x-2 max-w-[200px]"
+									className="hidden md:flex gap-x-2 max-w-[200px]"
 								>
 									<span className="truncate">{project.name}</span>
 									<ChevronDown className="size-4" />
@@ -113,7 +114,7 @@ export const Navbar = ({
 								</DropdownMenuItem>
 							</DropdownMenuContent>
 						</DropdownMenu>
-						<Separator orientation="vertical" className="mx-2" />
+						<Separator orientation="vertical" className="hidden lg:block mx-2" />
 					</>
 				)}
 				<DropdownMenu modal={false}>
@@ -124,6 +125,7 @@ export const Navbar = ({
 						</Button>
 					</DropdownMenuTrigger>
 					<DropdownMenuContent align="start" className="min-w-60">
+                        {project && <DropdownMenuItem onClick={() => setIsRenaming(true)}><Pencil className="size-4 mr-2" />Rename Project</DropdownMenuItem>}
 						<DropdownMenuItem
 							onClick={() => setImportOpen(true)}
 							className="flex items-center gap-x-2"
@@ -138,7 +140,7 @@ export const Navbar = ({
 						</DropdownMenuItem>
 					</DropdownMenuContent>
 				</DropdownMenu>
-				<Separator orientation="vertical" className="mx-2" />
+				<Separator orientation="vertical" className="hidden lg:block mx-2" />
 				<Hint label="Select" side="bottom" sideOffset={10}>
 					<Button
 						variant={"ghost"}
@@ -146,14 +148,15 @@ export const Navbar = ({
 						onClick={() => {
 							onChangeActiveTool("select");
 						}}
-						className={cn(activeTool === "select" && "bg-background/50")}
+						aria-label="Select objects"
+                        className={cn("size-8 shrink-0", activeTool === "select" && "bg-background/50")}
 					>
 						<MousePointerClick className="size-4" />
 					</Button>
 				</Hint>
 				<Hint label="Undo" side="bottom" sideOffset={10}>
 					<Button
-                        aria-label="Undo"
+                        aria-label="Undo" className="size-8 shrink-0"
 						variant={"ghost"}
 						disabled={!editor?.canUndo()}
 						size={"icon"}
@@ -165,7 +168,7 @@ export const Navbar = ({
 					</Button>
 				</Hint>
 				<Hint label="Redo" side="bottom" sideOffset={10}>
-					<Button aria-label="Redo"
+					<Button aria-label="Redo" className="size-8 shrink-0"
 						variant={"ghost"}
 						size={"icon"}
 						disabled={!editor?.canRedo()}
@@ -176,11 +179,11 @@ export const Navbar = ({
 						<Redo2 className="size-4" />
 					</Button>
 				</Hint>
-				<Separator orientation="vertical" className="mx-2" />
+				<Separator orientation="vertical" className="hidden lg:block mx-2" />
 				{isPending && (
 					<div className="flex items-center gap-x-2">
 						<Loader className="size-4 text-muted-foreground animate-spin" />
-						<p className="text-xs text-muted-foreground">Saving...</p>
+						<p className="sr-only sm:not-sr-only text-xs text-muted-foreground">Saving...</p>
 					</div>
 				)}
 				{!isPending && isError && (
@@ -193,16 +196,16 @@ export const Navbar = ({
 				{!isPending && !isError && (
 					<div className="flex items-center gap-x-2">
 						<BsCloudCheck className="size-[20px] text-muted-foreground" />
-						<p className="text-xs text-muted-foreground">Saved</p>
+						<p className="sr-only sm:not-sr-only text-xs text-muted-foreground">Saved</p>
 					</div>
 				)}
 
-				<div className="ml-auto flex items-center gap-x-4">
-                    <Button variant="ghost" size="sm" onClick={() => setVersionsOpen(true)}>Versions</Button>
+				<div className="ml-auto flex items-center gap-x-0.5 sm:gap-x-4">
+                    <Button aria-label="Versions" className="px-2 sm:px-3" variant="ghost" size="sm" onClick={() => setVersionsOpen(true)}><Clock3 className="size-4 sm:hidden" /><span className="sr-only sm:not-sr-only">Versions</span></Button>
 					<DropdownMenu modal={false}>
 						<DropdownMenuTrigger asChild>
-							<Button variant={"ghost"} size={"sm"}>
-								Export
+							<Button aria-label="Export" className="px-2 sm:px-3" variant={"ghost"} size={"sm"}>
+								<span className="sr-only sm:not-sr-only">Export</span>
 								<Download className="size-4" />
 							</Button>
 						</DropdownMenuTrigger>
@@ -265,7 +268,7 @@ export const Navbar = ({
 							</DropdownMenuItem>
 						</DropdownMenuContent>
 					</DropdownMenu>
-					<div className="flex items-center gap-x-4">
+					<div className="hidden md:flex items-center gap-x-4">
 						<ModeToggle />
 						<UserButton />
 					</div>

@@ -25,7 +25,7 @@ export const FilterSidebar = ({
 		onChangeActiveTool("select");
 	}, [onChangeActiveTool]);
 	return (
-		<aside
+		<aside data-editor-panel
 			className={cn(
 				"bg-background relative border-r z-[40] w-[360px] h-full flex flex-col",
 				activeTool === "filter" ? "visible" : "hidden",
