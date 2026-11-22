@@ -68,18 +68,25 @@ async function main() {
 
  let viewport = [2, 0, 0, 2, 15, 30];
  const original = [...viewport];
+ let jpegComposites = 0;
  const exportCanvas = {
   getObjects: () => [{ name: 'clip', width: 900, height: 1200, left: 25, top: 40 }],
   get viewportTransform() { return viewport; },
   setViewportTransform: (v: number[]) => { viewport = v; },
   requestRenderAll: () => {},
-  toDataURL: (options: { format: string }) => `data:image/${options.format};base64,TEST`,
+  toCanvasElement: () => ({
+   width: 900, height: 1200,
+   getContext: () => ({globalCompositeOperation: 'source-over', fillStyle: '', fillRect: () => { jpegComposites += 1; }}),
+   toDataURL: (mime: string) => `data:${mime};base64,TEST`,
+  }),
   toSVG: (options: { viewBox: { x: number; y: number } }) => `<svg viewBox="${options.viewBox.x} ${options.viewBox.y} 900 1200"><rect width="30" height="30"/></svg>`,
  };
  assert.ok(exportRaster(exportCanvas as never, 'png').startsWith('data:image/png;'));
  assert.deepEqual(viewport, original);
+ assert.equal(jpegComposites, 0);
  assert.ok(exportRaster(exportCanvas as never, 'jpeg').startsWith('data:image/jpeg;'));
  assert.deepEqual(viewport, original);
+ assert.equal(jpegComposites, 1, 'JPEG alpha is composited onto white');
  const svg = exportSvg(exportCanvas as never);
  assert.ok(svg.startsWith('data:image/svg+xml;'));
  assert.ok(decodeURIComponent(svg.split(',')[1]).includes('<svg viewBox="25 40 900 1200">'));

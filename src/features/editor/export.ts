@@ -19,7 +19,18 @@ function withIdentityViewport<T>(canvas: fabric.Canvas, exportFile: () => T): T 
 
 export function exportRaster(canvas: fabric.Canvas, format: "png" | "jpeg") {
 	const bounds = workspaceBounds(canvas);
-	return withIdentityViewport(canvas, () => canvas.toDataURL({ ...bounds, format, quality: 1 }));
+	return withIdentityViewport(canvas, () => {
+		const output = canvas.toCanvasElement(1, bounds);
+		if (format === "jpeg") {
+			// JPEG has no alpha channel. Composite transparent edges onto white.
+			const context = output.getContext("2d");
+			if (!context) throw new Error("Image export is unavailable");
+			context.globalCompositeOperation = "destination-over";
+			context.fillStyle = "#ffffff";
+			context.fillRect(0, 0, output.width, output.height);
+		}
+		return output.toDataURL(`image/${format}`, 1);
+	});
 }
 
 export function exportSvg(canvas: fabric.Canvas) {

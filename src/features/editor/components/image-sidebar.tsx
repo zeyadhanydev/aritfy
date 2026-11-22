@@ -34,7 +34,7 @@ export const ImageSidebar = ({
 		>
 			<ToolSidebarHeader
 				title="Images"
-				description="Add Imagas to your canvas"
+				description="Add images to your canvas"
 			/>
 			<div className="p-4 border-b">
 				<UploadButton
@@ -69,26 +69,24 @@ export const ImageSidebar = ({
 				<div className="p-4 grid grid-cols-2 gap-4">
 					{data?.map((image) => {
 						return (
-							<button
-								type="button"
-								key={image.id}
-								className="relative w-full h-[100px] group hover:opacity-75 transition bg-muted rounded-sm overflow-hidden border"
-								onClick={() => editor?.addImage(image.urls.regular)}
-							>
-								<img
-									src={image.urls.small}
-									alt={image.alt_description || ""}
-									className="object-cover"
-								/>
-								<a
-									href={image.links.html}
-									target="_blank"
+                            <div key={image.id} className="relative w-full h-[100px] group bg-muted rounded-sm overflow-hidden border">
+                                <button
+                                    type="button"
+                                    className="w-full h-full hover:opacity-75 transition"
+                                    aria-label={image.alt_description || "Add photo to canvas"}
+                                    onClick={() => editor?.addImage(image.urls.regular)}
+                                >
+                                    <img src={image.urls.small} alt={image.alt_description || ""} className="w-full h-full object-cover" />
+                                </button>
+                                <a
+                                    href={image.links.html}
+                                    target="_blank"
                                     rel="noopener noreferrer"
-									className="opacity-0 group-hover:opacity-100 absolute left-0 bottom-0 w-full text-[10px] truncate text-white hover:underline p-1 bg-black/50 text-left"
-								>
-									{image.user.name}
-								</a>
-							</button>
+                                    className="opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 absolute left-0 bottom-0 w-full text-[10px] truncate text-white hover:underline p-1 bg-black/50 text-left"
+                                >
+                                    {image.user.name}
+                                </a>
+                            </div>
 						);
 					})}
 				</div>
