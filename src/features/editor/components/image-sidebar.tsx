@@ -24,7 +24,8 @@ export const ImageSidebar = ({
 	const onClose = useCallback(() => {
 		onChangeActiveTool("select");
 	}, [onChangeActiveTool]);
-	const { data, isLoading, isError } = useGetImages();
+	const { data, isLoading, isError } = useGetImages(activeTool === "images");
+    if (activeTool !== "images") return null;
 	return (
 		<aside data-editor-panel
 			className={cn(
@@ -76,7 +77,7 @@ export const ImageSidebar = ({
                                     aria-label={image.alt_description || "Add photo to canvas"}
                                     onClick={() => editor?.addImage(image.urls.regular)}
                                 >
-                                    <img src={image.urls.small} alt={image.alt_description || ""} className="w-full h-full object-cover" />
+                                    <img loading="lazy" decoding="async" src={image.urls.small} alt={image.alt_description || ""} className="w-full h-full object-cover" />
                                 </button>
                                 <a
                                     href={image.links.html}

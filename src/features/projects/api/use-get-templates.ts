@@ -6,8 +6,9 @@ type RequestType = InferRequestType<
 	typeof client.api.projects.templates.$get
 >["query"];
 
-export const useGetTemplates = (apiQuery: RequestType) => {
+export const useGetTemplates = (apiQuery: RequestType, enabled = true) => {
 	const query = useInfiniteQuery<InferResponseType<typeof client.api.projects.templates.$get, 200>, Error>({
+        enabled,
         initialPageParam: Number(apiQuery.page ?? 1),
         getNextPageParam: lastPage => lastPage.nextPage,
 		queryKey: ["templates", apiQuery],

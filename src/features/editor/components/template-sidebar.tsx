@@ -40,7 +40,7 @@ export const TemplateSidebar = ({
 		limit: "20",
 		page: "1",
         search: debouncedSearch, access, source,
-	});
+	}, activeTool === "templates");
 	const paywall = usePaywall();
 
 	const onClick = async (template: { isPro: boolean | null; json: string }) => {
@@ -53,6 +53,7 @@ export const TemplateSidebar = ({
 			editor?.loadJson(template.json);
 		}
 	};
+    if (activeTool !== "templates") return null;
 	return (
 		<aside data-editor-panel
 			className={cn(
@@ -95,6 +96,7 @@ export const TemplateSidebar = ({
 								}}
 							>
 								<img
+                                    loading="lazy" decoding="async"
 									src={template.thumbnailUrl || ""}
 									alt={template.name || "Template"}
 									className="object-cover"

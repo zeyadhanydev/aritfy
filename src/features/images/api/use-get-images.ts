@@ -2,9 +2,10 @@ import { useQuery } from "@tanstack/react-query";
 
 import { client } from "@/lib/hono";
 
-export const useGetImages = () => {
+export const useGetImages = (enabled = true) => {
   const query = useQuery({
     queryKey: ['images'],
+    enabled,
     queryFn: async () => {
       const response = await client.api.images.$get();
       if (!response.ok) {

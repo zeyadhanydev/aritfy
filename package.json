@@ -11,7 +11,7 @@
     "db:migrate": "npx drizzle-kit migrate",
     "db": "npx drizzle-kit generate && npx drizzle-kit migrate",
     "db:studio": "npx drizzle-kit studio",
-    "test": "tsx tests/editor-regressions.tsx && tsx tests/editor-mutations.ts && tsx tests/autosave-safety.tsx && node tests/project-versions.mjs && tsx tests/remove-background.ts",
+    "test": "tsx tests/editor-regressions.tsx && tsx tests/editor-mutations.ts && tsx tests/autosave-safety.tsx && node tests/project-versions.mjs && tsx tests/remove-background.ts && tsx tests/library-loading.tsx",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
