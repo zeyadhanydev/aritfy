@@ -1,7 +1,11 @@
 import { CUTOUT_SIZE, MAX_CUTOUT_PIXELS, cutoutMaskPixels, normalizeCutoutPixels } from "./remove-bg-pixels";
 
 interface RemoveBackgroundResult { image: string; error?: string; }
-type WorkerReply = { id: number; ready?: boolean; mask?: Float32Array; error?: string };
+type WorkerReply = { id?: number; started?: boolean; ready?: boolean; mask?: Float32Array; error?: string };
+let startup: Promise<void> | null = null;
+let finishStartup: (() => void) | null = null;
+let failStartup: ((error: Error) => void) | null = null;
+let startupTimer: ReturnType<typeof setTimeout> | undefined;
 let worker: Worker | null = null;
 let ready = false;
 let counter = 0;
@@ -11,6 +15,7 @@ const pending = new Map<number, { resolve: (reply: WorkerReply) => void; reject:
 
 function resetWorker(message: string) {
   worker?.terminate(); worker = null; ready = false; initialization = null;
+  clearTimeout(startupTimer); failStartup?.(new Error(message)); startup = null; finishStartup = null; failStartup = null;
   for (const request of pending.values()) { clearTimeout(request.timer); request.reject(new Error(message)); }
   pending.clear();
 }
@@ -18,7 +23,14 @@ function getWorker() {
   if (!worker) {
     if (typeof Worker === "undefined" || typeof WebAssembly === "undefined") throw new Error("This browser does not support local background removal.");
     worker = new Worker(`${window.location.origin}/onnx/cutout-worker.js`, { type: "module", name: "Aritfy local cutout" });
+    startup = new Promise<void>((resolve, reject) => {
+      failStartup = reject;
+      finishStartup = () => { clearTimeout(startupTimer); resolve(); };
+      startupTimer = setTimeout(() => resetWorker("The background worker did not start. Check your browser's worker support or try again."), 30_000);
+    });
     worker.onmessage = ({ data }: MessageEvent<WorkerReply>) => {
+      if (data.started) { finishStartup?.(); return; }
+      if (typeof data.id !== "number") return;
       const request = pending.get(data.id); if (!request) return;
       clearTimeout(request.timer); pending.delete(data.id);
       if (data.error) request.reject(new Error(data.error));
@@ -29,8 +41,11 @@ function getWorker() {
   }
   return worker;
 }
-function request(type: "init" | "segment", pixels?: Float32Array): Promise<WorkerReply> {
-  const target = getWorker(); const id = ++counter;
+async function request(type: "init" | "segment", pixels?: Float32Array): Promise<WorkerReply> {
+  const target = getWorker();
+  // Do not send initialization until the worker has actually installed its handler.
+  await startup;
+  const id = ++counter;
   return new Promise((resolve, reject) => {
     const timer = setTimeout(() => resetWorker(type === "init" ? "The local model did not start in time. Check the download or try again." : "Background removal timed out. Try a smaller photo or another browser."), 90_000);
     pending.set(id, { resolve, reject, timer });

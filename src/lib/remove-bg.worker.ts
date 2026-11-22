@@ -45,3 +45,5 @@ scope.onmessage = async ({ data }) => {
     scope.postMessage({ id: data.id, error: error instanceof Error ? error.message : "Background removal failed." });
   } finally { busy = false; }
 };
+// Explicit startup handshake also covers slower module loading on hosted browsers.
+scope.postMessage({ started: true });
