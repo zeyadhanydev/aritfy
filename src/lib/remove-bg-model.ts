@@ -17,7 +17,7 @@ function resetWorker(message: string) {
 function getWorker() {
   if (!worker) {
     if (typeof Worker === "undefined" || typeof WebAssembly === "undefined") throw new Error("This browser does not support local background removal.");
-    worker = new Worker(new URL("./remove-bg.worker.ts", import.meta.url), { type: "module" });
+    worker = new Worker(`${window.location.origin}/onnx/cutout-worker.js`, { type: "module", name: "Aritfy local cutout" });
     worker.onmessage = ({ data }: MessageEvent<WorkerReply>) => {
       const request = pending.get(data.id); if (!request) return;
       clearTimeout(request.timer); pending.delete(data.id);
@@ -32,7 +32,7 @@ function getWorker() {
 function request(type: "init" | "segment", pixels?: Float32Array): Promise<WorkerReply> {
   const target = getWorker(); const id = ++counter;
   return new Promise((resolve, reject) => {
-    const timer = setTimeout(() => resetWorker("Background removal timed out. Try a smaller photo or another browser."), 90_000);
+    const timer = setTimeout(() => resetWorker(type === "init" ? "The local model did not start in time. Check the download or try again." : "Background removal timed out. Try a smaller photo or another browser."), 90_000);
     pending.set(id, { resolve, reject, timer });
     target.postMessage({ id, type, pixels }, pixels ? [pixels.buffer] : []);
   });

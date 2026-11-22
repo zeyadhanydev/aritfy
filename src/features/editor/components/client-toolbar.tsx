@@ -359,6 +359,7 @@ export const ClientToolbar = ({
 				<div className="flex justify-center items-center h-full">
 					<Hint label="Filters" side="bottom" sideOffset={5}>
 						<Button
+							aria-label="Image filters"
 							onClick={() => onChangeActiveTool("filter")}
 							size={"icon"}
 							variant={"ghost"}
@@ -373,6 +374,7 @@ export const ClientToolbar = ({
 				<div className="flex justify-center items-center h-full">
 					<Hint label="Remove background" side="bottom" sideOffset={5}>
 						<Button
+							aria-label="Remove background"
 							onClick={() => onChangeActiveTool("remove-bg")}
 							size={"icon"}
 							variant={"ghost"}
