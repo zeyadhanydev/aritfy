@@ -176,7 +176,7 @@ export const Editor = ({ initialData }: EditorProps) => {
 					activeTool={activeTool}
 					onChangeActiveTool={onChangeActiveTool}
 				/>
-				<main className="bg-muted flex-1 min-h-0 min-w-0 overflow-hidden relative flex flex-col">
+				<main className="isolate bg-muted flex-1 min-h-0 min-w-0 overflow-hidden relative flex flex-col">
 					<Toolbar
 						editor={editor}
 						activeTool={activeTool}
