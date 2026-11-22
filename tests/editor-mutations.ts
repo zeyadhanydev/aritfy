@@ -1,3 +1,4 @@
+import { BUILT_IN_TEMPLATES } from '../src/features/projects/built-in-templates';
 import assert from 'node:assert/strict';
 import { JSDOM } from 'jsdom';
 import { invoiceSubscriptionId } from '../src/lib/stripe-subscription';
@@ -42,3 +43,12 @@ async function main() {
  console.log(`PASS: ${operations.length} property mutations persist, font family and zero opacity getters, current/legacy/expanded Stripe invoice reference extraction. No provider or payment calls.`);
 }
 main().catch(error => { console.error(error); process.exitCode = 1; });
+
+for (const template of BUILT_IN_TEMPLATES) {
+ const design = JSON.parse(template.json);
+ assert.equal(design.objects.length, 9);
+ assert.equal(design.objects.some((object: {type: string}) => object.type === "image"), false);
+ assert.equal(design.clipPath.width, template.width);
+ assert.equal(design.clipPath.height, template.height);
+}
+console.log("PASS: three self-contained vector templates with matching workspace dimensions and no remote images.");

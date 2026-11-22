@@ -1,6 +1,7 @@
 import type { fabric } from "fabric";
 import { useCallback, useRef, useState } from "react";
 import { JSON_KEYS } from "../types";
+import { designIsComplete, INCOMPLETE_DESIGN_MESSAGE } from "../design-integrity";
 
 type UseHistoryProps = {
 	canvas: fabric.Canvas | null;
@@ -9,6 +10,7 @@ type UseHistoryProps = {
 
 export const useHistory = ({ canvas, saveCallback }: UseHistoryProps) => {
 	const [historyIndex, setHistoryIndexState] = useState(0);
+    const [restoreError, setRestoreError] = useState<string | null>(null);
 	const indexRef = useRef(0);
 	const canvasHistory = useRef<string[]>([]);
 	const skipSave = useRef(false);
@@ -61,14 +63,18 @@ export const useHistory = ({ canvas, saveCallback }: UseHistoryProps) => {
 			skipSave.current = true;
 			try {
 				canvas.loadFromJSON(state, () => {
-					canvas.renderAll();
-					setHistoryIndex(nextIndex);
+					if (!designIsComplete(state, canvas.toJSON(JSON_KEYS))) {
+                        setRestoreError(INCOMPLETE_DESIGN_MESSAGE);
+                        return;
+                    }
+                    canvas.renderAll();
+                    setHistoryIndex(nextIndex);
 					skipSave.current = false;
 					persist();
 				});
-			} catch (error) {
-				skipSave.current = false;
-				throw error;
+			} catch {
+                skipSave.current = true;
+                setRestoreError(INCOMPLETE_DESIGN_MESSAGE);
 			}
 		},
 		[canvas, persist, setHistoryIndex],
@@ -76,5 +82,5 @@ export const useHistory = ({ canvas, saveCallback }: UseHistoryProps) => {
 	const undo = useCallback(() => restore(indexRef.current - 1), [restore]);
 	const redo = useCallback(() => restore(indexRef.current + 1), [restore]);
 
-	return { save, redo, undo, canRedo, canUndo, setHistoryIndex, canvasHistory, skipSave };
+	return { save, redo, undo, canRedo, canUndo, setHistoryIndex, canvasHistory, skipSave, restoreError };
 };

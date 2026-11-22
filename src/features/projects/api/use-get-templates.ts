@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 
 import { client } from "@/lib/hono";
+import { BUILT_IN_TEMPLATES } from "../built-in-templates";
 import { InferRequestType } from "hono";
 type RequestType = InferRequestType<
 	typeof client.api.projects.templates.$get
@@ -17,7 +18,7 @@ export const useGetTemplates = (apiQuery: RequestType) => {
 				throw new Error("Failed to fetch templates");
 			}
 			const { data } = await response.json();
-			return data;
+			return [...BUILT_IN_TEMPLATES, ...data];
 		},
 	});
 	return query;

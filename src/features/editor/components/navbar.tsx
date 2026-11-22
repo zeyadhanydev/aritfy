@@ -12,7 +12,8 @@ import {
 import React, { useState } from "react";
 import { BsCloudCheck, BsCloudSlash } from "react-icons/bs";
 import { CiFileOn } from "react-icons/ci";
-import { useFilePicker } from "use-file-picker";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { Hint } from "@/components/hint";
 
 import { Button } from "@/components/ui/button";
@@ -59,22 +60,24 @@ export const Navbar = ({
 	const isError = currentStatus === "error";
 	const isPending = currentStatus === "pending";
 
-	const { openFilePicker } = useFilePicker({
-		accept: ".json",
-		onFilesSuccessfullySelected: ({ plainFiles }: { plainFiles: File[] }) => {
-			if (plainFiles && plainFiles.length > 0) {
-				const file = plainFiles[0];
-				const reader = new FileReader();
-				reader.readAsText(file, "UTF-8");
-				reader.onload = () => {
-					try { editor?.loadJson(reader.result as string); } catch { toast.error("This JSON file could not be opened."); }
-				};
-			}
-		},
-	});
+    const [importOpen, setImportOpen] = useState(false);
+    const importFile = async (file: File | undefined) => {
+        if (!file || !editor) return;
+        if (file.size > 20 * 1024 * 1024) { toast.error("Choose a JSON design smaller than 20 MB."); return; }
+        try {
+            editor.loadJson(await file.text());
+            setImportOpen(false);
+        } catch { toast.error("This JSON file could not be opened."); }
+    };
 	return (
 		<div className="w-full flex items-center p-4 h-[68px] gap-x-8 border-b bg-background lg:pl-[34px]">
-			<Logo />
+			<Dialog open={importOpen} onOpenChange={setImportOpen}>
+                <DialogContent>
+                    <DialogHeader><DialogTitle>Open JSON design</DialogTitle><DialogDescription>A successful import replaces the current canvas. Choose an Aritfy JSON design, up to 20 MB.</DialogDescription></DialogHeader>
+                    <Input type="file" accept=".json,application/json" aria-label="Choose JSON design" onChange={(event) => { void importFile(event.currentTarget.files?.[0]); }} />
+                </DialogContent>
+            </Dialog>
+            <Logo />
 			<div className="w-full flex items-center gap-x-1 h-full">
 				{project && (
 					<>
@@ -116,7 +119,7 @@ export const Navbar = ({
 					</DropdownMenuTrigger>
 					<DropdownMenuContent align="start" className="min-w-60">
 						<DropdownMenuItem
-							onClick={openFilePicker}
+							onClick={() => setImportOpen(true)}
 							className="flex items-center gap-x-2"
 						>
 							<CiFileOn className="size-8" />
@@ -144,6 +147,7 @@ export const Navbar = ({
 				</Hint>
 				<Hint label="Undo" side="bottom" sideOffset={10}>
 					<Button
+                        aria-label="Undo"
 						variant={"ghost"}
 						disabled={!editor?.canUndo()}
 						size={"icon"}

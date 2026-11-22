@@ -3,6 +3,7 @@ import React, { act } from 'react';
 import { JSDOM } from 'jsdom';
 import { useHistory } from '../src/features/editor/hooks/use-history';
 import { useLoadState } from '../src/features/editor/hooks/use-load-state';
+import { designIsComplete } from '../src/features/editor/design-integrity';
 import { exportRaster, exportSvg } from '../src/features/editor/export';
 
 async function main() {
@@ -66,6 +67,25 @@ async function main() {
  assert.equal(api!.skipSave.current, false);
  await act(async () => loadRoot.unmount());
 
+ assert.equal(designIsComplete({objects:[{type:'group',objects:[{type:'image'}]}]}, {objects:[{type:'group',objects:[]}]}),false);
+ const incompleteRoot = createRoot(document.querySelector('#root')!);
+ let incompleteError: string | null = null;
+ const expectedDesign = { current: JSON.stringify({objects:[{id:'kept'},{id:'missing-image'}]}) };
+ const incompleteCanvas = { ...canvas, loadFromJSON: (_next: unknown, done: () => void) => {state={objects:[{id:'kept'}]};done();} };
+ persisted.length=0;
+ function IncompleteHarness() {
+  api=useHistory({canvas:incompleteCanvas as never,saveCallback:value=>persisted.push(value)});
+  incompleteError=useLoadState({canvas:incompleteCanvas as never,autoZoom:()=>{},initialState:expectedDesign,canvasHistory:api.canvasHistory,setHistoryIndex:api.setHistoryIndex,skipSave:api.skipSave});
+  return null;
+ }
+ await act(async()=>incompleteRoot.render(<IncompleteHarness/>));
+ assert.match(incompleteError ?? '', /autosave are paused/);
+ assert.equal(api!.skipSave.current,true);
+ await act(async()=>api!.save());
+ assert.equal(persisted.length,0,'a partially loaded design cannot overwrite its stored JSON');
+ assert.equal(JSON.parse(expectedDesign.current).objects.length,2);
+ await act(async()=>incompleteRoot.unmount());
+
  let viewport = [2, 0, 0, 2, 15, 30];
  const original = [...viewport];
  let jpegComposites = 0;
@@ -94,6 +114,6 @@ async function main() {
  exportCanvas.toSVG = () => { throw new Error('Expected test failure'); };
  assert.throws(() => exportSvg(exportCanvas as never));
  assert.deepEqual(viewport, original, 'viewport is restored after an export error');
- console.log('PASS: undo/redo final-state persistence, redo branching, duplicate snapshots, initial load suppression, PNG/JPEG/SVG formats, viewport restoration.');
+ console.log('PASS: undo/redo final-state persistence, redo branching, duplicate snapshots, initial load suppression and incomplete-asset autosave guard, PNG/JPEG/SVG formats, viewport restoration.');
 }
 main().catch(error => { console.error(error); process.exitCode = 1; });

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { fabric } from "fabric";
 import { JSON_KEYS } from "../types";
+import { designIsComplete, INCOMPLETE_DESIGN_MESSAGE } from "../design-integrity";
 
 interface UseLoadStateProps {
 	autoZoom: () => void;
@@ -34,7 +35,12 @@ export const useLoadState = ({
                 if (!parsedData || !Array.isArray(parsedData.objects)) throw new Error("Invalid design data");
 
 				canvas.loadFromJSON(parsedData, () => {
-					const currentState = JSON.stringify(canvas.toJSON(JSON_KEYS));
+					const loaded = canvas.toJSON(JSON_KEYS);
+                    if (!designIsComplete(parsedData, loaded)) {
+                        setLoadError(INCOMPLETE_DESIGN_MESSAGE);
+                        return;
+                    }
+                    const currentState = JSON.stringify(loaded);
 					if (canvasHistory.current) {
 						canvasHistory.current = [currentState];
 					}

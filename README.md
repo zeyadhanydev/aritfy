@@ -62,3 +62,7 @@ Tests cover history branching and save suppression, PNG/JPEG/SVG export paths an
 ## Security and operations
 
 Keep provider keys server-side, out of source and logs. Removing a leaked key from a file does not revoke it; replace it with the provider, update the deployment configuration, review usage, then revoke the old credential. Review dependency audit results and verify application behavior after updates. A clean audit does not prove an application is secure.
+
+## Self-contained templates and safe loading
+
+Three editable vector templates are included with the app and use local thumbnails and system fonts, without an external image host. Existing saved templates are retained. Some older templates depend on external assets that may be unavailable. If objects fail to load, the editor blocks editing and autosave rather than overwriting the stored design with a partial canvas. JSON import uses a labeled file input and accepts files up to 20 MB.

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="1080" height="1350" viewBox="0 0 1080 1350" xml:space="preserve">
+<desc>Created with Fabric.js 5.3.0</desc>
+<defs>
+<clipPath id="CLIPPATH_2" >
+	<rect transform="matrix(1 0 0 1 540 675)" x="-540" y="-675" rx="0" ry="0" width="1080" height="1350" />
+</clipPath>
+</defs>
+<g clip-path="url(#CLIPPATH_2)" >
+<g transform="matrix(1 0 0 1 540 675)"  >
+<rect style="stroke: none; stroke-width: 0; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; fill: rgb(105,44,55); fill-rule: nonzero; opacity: 1;"  x="-540" y="-675" rx="0" ry="0" width="1080" height="1350" />
+</g>
+<g transform="matrix(1 0 0 1 132.5 80)"  >
+<rect style="stroke: none; stroke-width: 0; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; fill: rgb(240,164,72); fill-rule: nonzero; opacity: 1;"  x="-52.5" y="-5" rx="0" ry="0" width="105" height="10" />
+</g>
+<g transform="matrix(1 0 0 1 530 138.56)" style=""  >
+		<text xml:space="preserve" font-family="Arial" font-size="24" font-style="normal" font-weight="400" style="stroke: none; stroke-width: 0; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; fill: rgb(255,241,212); fill-rule: nonzero; opacity: 1; white-space: pre;" ><tspan x="-450" y="7.54" >ARITFY / NEW COLLECTION</tspan></text>
+</g>
+<g transform="matrix(1 0 0 1 950 475)"  >
+<circle style="stroke: none; stroke-width: 0; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; fill: rgb(240,164,72); fill-rule: nonzero; opacity: 1;"  cx="0" cy="0" r="225" />
+</g>
+<g transform="matrix(1 0 0 1 980 425)"  >
+<circle style="stroke: none; stroke-width: 0; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; fill: rgb(105,44,55); fill-rule: nonzero; opacity: 1;"  cx="0" cy="0" r="125" />
+</g>
+<g transform="matrix(1 0 0 1 570 526.67)" style=""  >
+		<text xml:space="preserve" font-family="Arial" font-size="118" font-style="normal" font-weight="700" style="stroke: none; stroke-width: 0; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; fill: rgb(255,241,212); fill-rule: nonzero; opacity: 1; white-space: pre;" ><tspan x="-490" y="-32.93" >Built to</tspan><tspan x="-490" y="107.07" >stand out.</tspan></text>
+</g>
+<g transform="matrix(1 0 0 1 540 1111)"  >
+<rect style="stroke: none; stroke-width: 0; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; fill: rgb(255,241,212); fill-rule: nonzero; opacity: 1;"  x="-460" y="-1" rx="0" ry="0" width="920" height="2" />
+</g>
+<g transform="matrix(1 0 0 1 530 1172.43)" style=""  >
+		<text xml:space="preserve" font-family="Arial" font-size="22" font-style="normal" font-weight="400" style="stroke: none; stroke-width: 0; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; fill: rgb(255,241,212); fill-rule: nonzero; opacity: 1; white-space: pre;" ><tspan x="-450" y="6.91" >YOUR NEXT DESIGN STARTS HERE</tspan></text>
+</g>
+<g transform="matrix(1 0 0 1 530 1250.17)" style=""  >
+		<text xml:space="preserve" font-family="Arial" font-size="18" font-style="normal" font-weight="400" style="stroke: none; stroke-width: 0; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; fill: rgb(255,241,212); fill-rule: nonzero; opacity: 1; white-space: pre;" ><tspan x="-450" y="5.65" >01 / 03</tspan></text>
+</g>
+</g>
+</svg>

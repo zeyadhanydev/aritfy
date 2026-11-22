@@ -33,8 +33,10 @@ import { useHotkeys } from "./use-hotkeys";
 import { useWindowEvents } from "./use-window-events";
 import { useLoadState } from "./use-load-state";
 import { exportRaster, exportSvg } from "../export";
+import { designIsComplete, INCOMPLETE_DESIGN_MESSAGE } from "../design-integrity";
 
 export const buildEditor = ({
+    onLoadError,
 	canvas,
 	fillColor,
 	setFillColor,
@@ -82,13 +84,17 @@ export const buildEditor = ({
         skipSave.current = true;
         try {
             canvas.loadFromJSON(data, () => {
+                if (!designIsComplete(data, canvas.toJSON(JSON_KEYS))) {
+                    onLoadError?.(INCOMPLETE_DESIGN_MESSAGE);
+                    return;
+                }
                 autoZoom();
                 skipSave.current = false;
                 save();
             });
-        } catch (error) {
-            skipSave.current = false;
-            throw error;
+        } catch {
+            skipSave.current = true;
+            onLoadError?.(INCOMPLETE_DESIGN_MESSAGE);
         }
 	};
 	const getWorkspace = () => {
@@ -814,6 +820,7 @@ export const useEditor = ({
 
 	const [canvas, setCanvas] = useState<null | fabric.Canvas>(null);
 	const [container, setContainer] = useState<HTMLDivElement | null>(null);
+	const [importError, setImportError] = useState<string | null>(null);
 	const [selectedObjects, setSelectedObjects] = useState<fabric.Object[]>([]);
 
 	const [fillColor, setFillColor] = useState<string>(FILL_COLOR);
@@ -823,7 +830,7 @@ export const useEditor = ({
 		useState<number[]>(STROKE_DASH_ARRAY);
 	const [fontFamily, setFontFamily] = useState<string>(FONT_FAMILY);
 	const { copy, paste } = useClipboard({ canvas });
-	const { save, canRedo, canUndo, redo, undo, setHistoryIndex, canvasHistory, skipSave } =
+	const { save, canRedo, canUndo, redo, undo, setHistoryIndex, canvasHistory, skipSave, restoreError } =
 		useHistory({ canvas, saveCallback });
 
 	const { autoZoom } = useAutoResize({
@@ -850,6 +857,7 @@ export const useEditor = ({
 	const editor = useMemo(() => {
 		if (canvas)
 			return buildEditor({
+                onLoadError: setImportError,
 				save,
 				undo,
 				redo,
@@ -1021,5 +1029,5 @@ export const useEditor = ({
 		],
 	);
 
-	return { init, editor, loadError };
+	return { init, editor, loadError: loadError ?? restoreError ?? importError };
 };
