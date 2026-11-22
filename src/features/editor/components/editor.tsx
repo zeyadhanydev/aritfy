@@ -92,9 +92,12 @@ export const Editor = ({ initialData }: EditorProps) => {
 			canvas.dispose();
 		};
 	}, [init]);
-    if (loadError) return <div role="alert" className="h-full flex flex-col items-center justify-center gap-4 p-8 text-center"><h1 className="font-semibold">Design could not be opened</h1><p>{loadError}</p><Link href="/" className="underline">Back to dashboard</Link></div>;
     return (
-        <div className="h-full flex flex-col">
+        <div className="h-full relative flex flex-col">
+            <div role="alert" className={loadError ? "absolute inset-0 z-[100] bg-background flex flex-col items-center justify-center gap-4 p-8 text-center" : "hidden"}>
+                <h1 className="font-semibold">Design could not be opened</h1><p>{loadError}</p><Link href="/" className="underline">Back to dashboard</Link>
+            </div>
+            <div className="contents" inert={loadError ? true : undefined} aria-hidden={loadError ? true : undefined}>
 			<Navbar
 				activeTool={activeTool}
 				onChangeActiveTool={onChangeActiveTool}
@@ -195,6 +198,7 @@ export const Editor = ({ initialData }: EditorProps) => {
 					<Footer editor={editor} />
 				</main>
 			</div>
+            </div>
 		</div>
 	);
 };
